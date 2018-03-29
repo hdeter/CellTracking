@@ -32,6 +32,7 @@ brew install libav
 Description of scripts (all Python scripts are Python 2.7)
 
 **Image Alignment (optional)**
+
 Image_alignment.py: Requires modification of a few parameters at the beginning of the script (see comments). Uses Fast Fourier Transform (FFT) to calculate alignment for a series of images, and outputs aligned images. Designed to be used for phase and fluorescence images. To improve alignment, a region of interest can be input for use during FFT calculations. See ROI_Align.csv for a sample ROI file.
 
 Image_alignment_prompt.py: A user friendly version of Image_alignment.py that requires user input.
@@ -52,11 +53,13 @@ Segmentation.ijm: An ImageJ macro containing a number of user prompts to train a
 Batch_segmentation.bsh: A BeanShell script written for use with Fiji that must be run in the terminal. It uses an existing classifer to train a batch The command to run the script is in RunWeka.py. 
 
 **Cell and lineage tracking**
+
 Track-cell-lineages.py: Requires modification of a few parameters at the beginning of the script (see comments). Uses binary (black and white) masks to identify single cells and obtain quantitative data (area, location, fluorescence, etc.) that is output in a csv and a pickle file. Tracks cells across multiple frames and determines cell lineage. Lineage data is output in a csv and a pickle file. 
 
 Track-cell-lineages_prompt.py: A user friendly version of Track-cell-lineages.py that requires user input.
 
 **Video rendering and whole image analysis**
+
 Image_analysis.py: Requires modification of a few parameters at the beginning of the script (see comments). Analyzes and renders videos for a group of phase and fluorescence images for global (whole image) fluorescence and fluorescence within a region of interest based on a csv file (optional). This data is output in a csv file.
 
 Image_analysis_prompt.py: A user friendly version of Image_analysis.py that requires user input.
