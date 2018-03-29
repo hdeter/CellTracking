@@ -59,7 +59,7 @@ Image_analysis_prompt.py: A user friendly version of Image_analysis.py that requ
 -----------------------------------------------------------------------------------------------------------------------------
 Practice dataset
 
-A sample dataset in the context of bacterial growth is included to test the scripts. The complete image dataset (467 frames) is available on FigShare.
+A sample dataset in the context of bacterial growth is available to test the scripts. The complete image dataset (467 frames) is available on FigShare.
 
 -----------------------------------------------------------------------------------------------------------------------------
 Contact information:
