@@ -1,0 +1,138 @@
+import ij.*;
+import ij.process.*;
+import trainableSegmentation.*;
+
+
+//FRAMEMIN = 1;
+//FRAMEMAX = 2;
+//FRAMESKIP = 1;
+
+for (arg : bsh.args)
+    print(arg);
+
+FRAMEMIN = Integer.parseInt(bsh.args[0].trim());
+FRAMEMAX = Integer.parseInt(bsh.args[1].trim());
+FRAMESKIP = Integer.parseInt(bsh.args[2].trim());
+Useprobs = Integer.parseInt(bsh.args[3].trim());
+print (Useprobs);
+
+//set to true for image to first mask
+//set to false for mask to black and white
+//if (Useprobs == 0){
+//	Useprobabilities = true;
+//	print (Useprobabilities);
+//}
+//else {
+//	Useprobabilities = false;
+//}
+
+scale = 1.0;
+
+//homedir = "/raid/PHIL_CRITICAL_DATA_DO_NOT_DELETE/111715_Q-entrain/MovD/segmentation/";
+//homedir = "/media/hdeter/drive/DiesMiracle/Book_chapter/";
+homedir = bsh.args[4];
+
+//make sure there is a / at the end
+imgdir = bsh.args[5];
+imgdir = homedir + imgdir;
+segdir = bsh.args[6];
+segdir = homedir + segdir;
+
+
+
+//fclassifier = "classifier_WM.model";
+fclassifier = bsh.args[7];
+
+iFRAME = 1;
+
+//fimageIn = "t000001xy1c1.tif";
+//fimageInFmt = "Ecoli_MGW202_test_fullimg-p-%03d.tif";
+fimageInFmt = bsh.args[8];
+ext = bsh.args[9];
+fimageInFmt = fimageInFmt + "-%03d." + ext;
+
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+// load a scaled image
+public ImagePlus loadScaledImage(filename, scale) {
+
+	print("......... loading file: " + filename);
+
+	imgFull = IJ.openImage(filename);
+	print("......... loaded file: " + filename);
+	print(imgFull.getStatistics());
+
+	ip = imgFull.getProcessor();
+	ip.setInterpolationMethod(ImageProcessor.BILINEAR);
+	ip = ip.resize((int) (imgFull.getWidth() * scale), (int) (imgFull.getHeight() * scale));
+	ip = ip.crop();
+	
+
+	img = new ImagePlus(imgFull.getShortTitle() + " scaled", ip);
+	if (Useprobs == 0) {
+		IJ.run(img,"Bandpass Filter...", "filter_large="+100+" filter_small=0 suppress=None tolerance=5");
+	}
+	//print(img.getStatistics());
+
+	
+	return img;
+}
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+// loads an image at a given scaling factor, segments the image, then saves the image
+public void segmentImage(homedir,imgdir,segdir,fclassifier,fimageInFmt,iFRAME,FRAMEMIN,FRAMEMAX,FRAMESKIP) {
+
+	////////////
+	////////////
+
+	iFRAME = FRAMEMIN;
+	nargs = new Long[] {iFRAME};
+	fimageIn = String.format(fimageInFmt, nargs);
+	fimageOutSeg = fimageIn.replace(".tif", "_mask");
+	fimageOutScale = fimageIn.replace(".tif", "_scale");
+	img = loadScaledImage(imgdir + fimageIn, scale);
+	
+	segmenter = new WekaSegmentation(img);
+	segmenter.loadClassifier(homedir + fclassifier);
+	print("......... loaded classifier: " + homedir + fclassifier);
+	
+	for (iFRAME=FRAMEMIN; iFRAME<=FRAMEMAX; iFRAME+=FRAMESKIP){
+		
+		nargs = new Long[] {iFRAME};
+		fimageIn = String.format(fimageInFmt, nargs);
+		//fimageOutSeg = fimageIn.replace(".png", "_mask");
+		fimageOutSeg = fimageIn;
+		fimageOutScale = fimageIn.replace(".png", "_scale");
+		img = loadScaledImage(imgdir + fimageIn, scale);
+		
+		segmenter.loadNewImage(img);
+
+		segmenter.applyClassifier(Useprobs == 0);
+		result = segmenter.getClassifiedImage();
+		print("......... segmented file with name: " + fimageIn);
+
+		////////////
+		////////////
+
+		//IJ.saveAs(img, "TIFF", homedir + "TEST/test.tif");
+		IJ.saveAs(result, "PNG", segdir + fimageOutSeg);
+		print("......... saved file: " + segdir + fimageOutSeg);
+	}
+
+}
+
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+
+// segment imageS and save them
+segmentImage(homedir,imgdir,segdir,fclassifier,fimageInFmt,iFRAME, FRAMEMIN, FRAMEMAX, FRAMESKIP);
+
+
+
+
