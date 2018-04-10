@@ -154,7 +154,7 @@ NFILES = len(FILES)
 #the following is so that fluorescence images are shifted as well
 FLFILES = []
 #loop parameters should be for every nth image that is shifted
-for flfile in range (FLINITIAL,NFILES+1,FLSKIP):
+for flfile in range (FLINITIAL,NFILES+FLINITIAL,FLSKIP):
     flnamed = flname % flfile
     FLFILES.append(flnamed)
 #######################################################################
