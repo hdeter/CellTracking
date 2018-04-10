@@ -196,10 +196,10 @@ if __name__ == "__main__":
 			if not os.path.isfile(runMask1Dir):
 				os.system('mkdir ' + runMask1Dir)
 			else:
-			os.system('rm ' + runMask1Dir + '/' + fname + '*.' + ext)
-			
-			WekaARG2 = [IMAGEJ, Useprobability, WorkDir + '/', AlignDir+ '/Mask1/', runMask1Dir + '/', FIRSTFRAME, FRAMEMAX, fname + '-p', ext, classifierfile1, cores] 
-			batchsegment(WekaARG2)
+				os.system('rm ' + runMask1Dir + '/' + fname + '*.' + ext)
+
+				WekaARG2 = [IMAGEJ, Useprobability, WorkDir + '/', AlignDir+ '/Mask1/', runMask1Dir + '/', FIRSTFRAME, FRAMEMAX, fname + '-p', ext, classifierfile1, cores] 
+				batchsegment(WekaARG2)
 
 			
 
