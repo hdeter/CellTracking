@@ -31,43 +31,33 @@ brew install libav
 -----------------------------------------------------------------------------------------------------------------------------
 Description of scripts (all Python scripts are Python 2.7)
 
+SegmentandTrack.py: Runs the entire cell segmentation and tracking pipeline (or parts of the pipeline) based on user responses to command prompts. The scripts that are called by SegmentandTrack.py are described below.
+
 **Image Alignment (optional)**
 
-Image_alignment.py: Requires modification of a few parameters at the beginning of the script (see comments). Uses Fast Fourier Transform (FFT) to calculate alignment for a series of images, and outputs aligned images. Designed to be used for phase and fluorescence images. To improve alignment, a region of interest can be input for use during FFT calculations. See ROI_Align.csv for a sample ROI file.
-
-Image_alignment_prompt.py: A user friendly version of Image_alignment.py that requires user input.
+Image_alignment.py: Called by SegmentandTrack.py. Uses Fast Fourier Transform (FFT) to calculate alignment for a series of images, and outputs aligned images. Designed to be used for phase and fluorescence images. To improve alignment, a region of interest can be input for use during FFT calculations. See ROI_Align.csv for a sample ROI file.
 
 **Fiji ImageJ scripts**
 
-RunWeka.py: Requires modification of a few parameters at the beginning of the script (see comments). For use with Mac, requires an instance if Fiji ImageJ to be open when training a classifier. Calls Segmentation.ijm when training a classifier in the Fiji Weka Segmentation tool, and calls Batch_segmentation.bsh when classifying a group of images with an existing classifier. 
+RunWeka.py: Called by SegmentandTrack.py. For use with Mac, requires an instance if Fiji ImageJ to be open when training a classifier. Calls Segmentation.ijm when training a classifier in the Fiji Weka Segmentation tool, and calls Batch_segmentation.bsh when classifying a group of images with an existing classifier. 
 
-RunWeka_prompt.py: For use with Mac. A user friendly version of RunWekaMac.py that requires user input.
+Segmentation.ijm: An ImageJ macro containing a number of user prompts to train a classifier in the Weka Segmentation Tool. Must be run in ImageJ.
 
-RunWekaUbuntu.py: Requires modification of a few parameters at the beginning of the script (see comments). For use with Linux. Calls Segmentation.ijm when training a classifier in the Fiji Weka Segmentation tool, and calls Batch_segmentation.bsh 
-when classifying a group of images with an existing classifier. 
-
-RunWekaUbuntu_prompt.py: For use with Linux. A user friendly version of RunWeka.py that requires user input.
-
-Segmentation.ijm: An ImageJ macro containing a number of user prompts to train a classifier in the Weka Segmentation Tool.
-
-Batch_segmentation.bsh: A BeanShell script written for use with Fiji that must be run in the terminal. It uses an existing classifer to train a batch The command to run the script is in RunWeka.py. 
+Batch_segmentation.bsh: A BeanShell script written for use with Fiji that must be run in the terminal. It uses an existing classifer to train a batch The command to run the script is in RunWeka.py.
 
 **Cell and lineage tracking**
 
-Track-cell-lineages.py: Requires modification of a few parameters at the beginning of the script (see comments). Uses binary (black and white) masks to identify single cells and obtain quantitative data (area, location, fluorescence, etc.) that is output in a csv and a pickle file. Tracks cells across multiple frames and determines cell lineage. Lineage data is output in a csv and a pickle file. 
-
-Track-cell-lineages_prompt.py: A user friendly version of Track-cell-lineages.py that requires user input.
+TrackCellLineages.py: Called by SegmentandTrack.py. Uses binary (black and white) masks to identify single cells and obtain quantitative data (area, location, fluorescence, etc.) that is output in a csv and a pickle file. Tracks cells across multiple frames and determines cell lineage. Lineage data is output in a csv and a pickle file. 
 
 **Video rendering and whole image analysis**
 
-Image_analysis.py: Requires modification of a few parameters at the beginning of the script (see comments). Analyzes and renders videos for a group of phase and fluorescence images for global (whole image) fluorescence and fluorescence within a region of interest based on a csv file (optional). This data is output in a csv file.
+Image_analysis.py: Called by SegmentandTrack.py.  Analyzes and renders videos for a group of phase and fluorescence images for global (whole image) fluorescence and fluorescence within a region of interest based on a csv file (optional). This data is output in a csv file.
 
-Image_analysis_prompt.py: A user friendly version of Image_analysis.py that requires user input.
 
 -----------------------------------------------------------------------------------------------------------------------------
 Practice dataset
 
-A sample dataset in the context of bacterial growth is available to test the scripts. The complete image dataset (467 frames) is available on FigShare.
+A sample dataset in the context of bacterial growth is available to test the scripts, and the complete image dataset (467 frames) is also available on FigShare (http://doi.org/10.17605/OSF.IO/GDXEN.
 
 -----------------------------------------------------------------------------------------------------------------------------
 Contact information:
