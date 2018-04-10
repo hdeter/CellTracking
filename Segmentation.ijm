@@ -132,7 +132,7 @@ if (bFirstImage){
 }
 while (training){
 	// segmentation files for use
-	classifierFile = getString("Name of classifier (relative to image directory)", "classifier.model");
+	classifierFile = getString("Name of classifier (relative to the working directory)", "classifier.model");
 	classifierFile = rootDir+classifierFile;
 	dataFile = getString("Name of data file (relative to image directory)", "data.arff");
 	dataFile = rootDir+dataFile;
