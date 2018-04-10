@@ -132,9 +132,9 @@ if (bFirstImage){
 }
 while (training){
 	// segmentation files for use
-	classifierFile = getString("Name of classifier (relative to image directory)", "classifier.model");
+	classifierFile = getString("Name of classifier (relative to the working directory)", "classifier.model");
 	classifierFile = rootDir+classifierFile;
-	dataFile = getString("Name of data file (relative to image directory)", "data.arff");
+	dataFile = getString("Name of data file (relative to the working directory)", "data.arff");
 	dataFile = rootDir+dataFile;
 	runClassify(rootDir,filename,classifierFile,dataFile,frame);
 	waitForUser("Train and save the classifier (into the image directory) in Weka. When finished close Weka and image (DO NOT save changes to the original image) then press OK below");
