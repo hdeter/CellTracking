@@ -178,7 +178,7 @@ if b_Segment:
 	if PROCESS:
 		CORES = int_input('How many processes are available to use for multiprocessing (set to 1 for no multiprocessing): ')
 	else:
-		CORES = 'None'
+		CORES = None
 	if ROUND2 == 2:
 		
 		TRAINING = bool_input('Do you have a trained classifier (Y/N): ')
