@@ -91,8 +91,9 @@ WorkDir = os.getcwd()
 print 'current working directory is ', WorkDir
 ImageDir = getdirname('What is the name of the image directory, relative to the working directory (e.g. Practice): ')
 
+FIRSTFRAME = int_input('First frame in dataset (e.g. 448): ')
+
 if b_Segment or b_track:
-	FIRSTFRAME = int_input('First frame in dataset (e.g. 448): ')
 	FRAMEMAX = int_input('Last frame in dataset (e.g. 467): ')
 	
 if b_track or b_ANALYZE:
@@ -127,7 +128,7 @@ if b_ALIGN:
 	if ROIALIGNFILE:
 		AlignROI = getfilename('Enter the path (relative to the working directory) to the csv file (e.g. Align_roi.csv): ')
 	else:
-		AlignROI = None
+		AlignROI = 'None'
 	AlignDir = text_input('Name of directory for output images (e.g. Aligned): ')
 else:
 	AlignDir = ImageDir
@@ -142,7 +143,7 @@ if not b_Segment:
 			if not MASKDIR:
 				print 'could not find directory'
 	else:
-		Mask2Dir = None			
+		Mask2Dir = 'None'			
 
 if b_ALIGN:
 	AlignARG = [AlignROI, AlignDir, ImageDir, fname, FLINITIAL, FLSKIP]
@@ -177,7 +178,7 @@ if b_Segment:
 	if PROCESS:
 		CORES = int_input('How many processes are available to use for multiprocessing (set to 1 for no multiprocessing): ')
 	else:
-		CORES = None
+		CORES = 'None'
 	if ROUND2 == 2:
 		
 		TRAINING = bool_input('Do you have a trained classifier (Y/N): ')
@@ -220,7 +221,7 @@ if b_Segment:
 
 	
 if b_track:
-	if not Mask2Dir == None:
+	if not Mask2Dir == 'None':
 		LineageDir = 'Lineages'
 		if not os.path.isdir(AlignDir + '/' + LineageDir):
 			os.system('mkdir ' + AlignDir + '/' + LineageDir)
@@ -237,9 +238,9 @@ if b_ANALYZE or b_RENDER:
 	if ROIANALYZE or CroptoROI:
 		ROIFILE = getfilename('Enter the path (relative to the working directory) to the csv file for the ROI to analyze (e.g. ROI.csv): ')
 	else:
-		ROIFILE = None
+		ROIFILE = 'None'
 	Writelineagetext = bool_input('Do you want to number the cells in the images based on lineage tracking (Y/N): ')
-	if not Mask2Dir == None:
+	if not Mask2Dir == 'None':
 		ContourImage = bool_input('Do you want to contour cells based on masks (Y/N): ')
 	else:
 		ContourImage = False
