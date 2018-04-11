@@ -83,7 +83,7 @@ def main(argv):
 
 	# parameters for images
 	#
-	MaxC = argv[9]                                # max number of fluorescence channels in image data
+	MaxC = CMAX                               # max number of fluorescence channels in image data
 	AIfmtInFile = argv[11] + '-%s-%03d.tif'       # format string for data
 	imgScale = 1                                 # scale to import images
 
