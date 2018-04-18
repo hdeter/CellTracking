@@ -16,7 +16,7 @@ the path to the file on your computer:
 	conda install opencv
 4. Install avconv: 
 	sudo apt install libav-tools
-5. Download and install Fiji ImageJ lifeline version from May 30, 2017 (availabel here: https://imagej.net/Fiji/Downloads)
+5. Download and install Fiji ImageJ (available here: https://imagej.net/Fiji/Downloads)
 
 -----------------------------------------------------------------------------------------------------------------------------
 Software Installation in Mac (OS X)
