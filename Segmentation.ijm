@@ -144,4 +144,5 @@ while (training){
 	}
 	//runClassify(rootDir2,filename2,frame2,classifierFile2,dataFile2);
 } 
-eval("script", "System.exit(0);");
+//eval("script", "System.exit(0);");
+run("Quit");

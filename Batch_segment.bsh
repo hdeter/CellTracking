@@ -117,6 +117,9 @@ public void segmentImage(homedir,imgdir,segdir,fclassifier,fimageInFmt,iFRAME,FR
 		result = segmenter.getClassifiedImage();
 		print("......... segmented file with name: " + fimageIn);
 
+		if (Useprobs == 1){
+			IJ.run(result, "Multiply...", "value=255");
+		}
 		////////////
 		////////////
 
