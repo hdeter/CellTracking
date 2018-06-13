@@ -9,6 +9,7 @@ Software Installation in Ubuntu 16.04 LTS (Linux)
 1. Install Anaconda 2.7 (Anaconda2-5.1.0-Linux-x86_64.sh) file using the following commands; replace /path/to/script.sh with 
 the path to the file on your computer:
 	sudo chmod +x /path/to/script.sh
+	/path/to/script.sh
 2. Add conda to the PATH: 
 	export PATH=~/anaconda2/bin:$PATH
 3. Install OpenCV through Anaconda: 
