@@ -76,6 +76,7 @@ import Image_alignment
 import Image_analysis
 import RunWeka
 import TrackCellLineages
+import Lineage_analysis
 
 
 b_ALIGN = bool_input('Do you wish to Align images (Y/N): ')
@@ -87,11 +88,12 @@ if b_ANALYZE:
 else:
 	b_RENDER = False
 
-WorkDir = os.getcwd()
-print 'current working directory is ', WorkDir
-ImageDir = getdirname('What is the name of the image directory, relative to the working directory (e.g. Practice): ')
+if b_ALIGN or b_Segment or b_track or b_ANALYZE:
+	WorkDir = os.getcwd()
+	print 'current working directory is ', WorkDir
+	ImageDir = getdirname('What is the name of the image directory, relative to the working directory (e.g. Practice): ')
 
-FIRSTFRAME = int_input('First frame in dataset (e.g. 448): ')
+	FIRSTFRAME = int_input('First frame in dataset (e.g. 448): ')
 
 if b_Segment or b_track:
 	FRAMEMAX = int_input('Last frame in dataset (e.g. 467): ')
@@ -103,18 +105,21 @@ if b_ALIGN or b_track or b_ANALYZE:
 	FLINITIAL = int_input('First frame with fluorescence image (e.g. 449): ')
 	FLSKIP = int_input('Number of frames between fluorescence images (i.e. every nth image): ')	
 
-FNAME = False
-while not FNAME:
-	fname = text_input('Name of image files preceding channel and filenumber (e.g. 20171212_book): ')
-	ftest = ImageDir + '/' + fname + '-%s-%03d.tif'
-	FNAME = os.path.isfile(ftest %('p', FIRSTFRAME))
-	if not FNAME:
-		print 'cannot find file: ', ftest %('p', FIRSTFRAME)
-		continue
-	if b_ALIGN or b_track or b_ANALYZE:
-		FNAME = os.path.isfile(ftest %('g', FLINITIAL))
+if b_ALIGN or b_Segment or b_track or b_ANALYZE:
+	FNAME = False
+	while not FNAME:
+		fname = text_input('Name of image files preceding channel and filenumber (e.g. 20171212_book): ')
+		ftest = ImageDir + '/' + fname + '-%s-%03d.tif'
+		FNAME = os.path.isfile(ftest %('p', FIRSTFRAME))
 		if not FNAME:
-			print 'cannot find file: ', ftest %('g', FLINITIAL)
+			print 'cannot find file: ', ftest %('p', FIRSTFRAME)
+			continue
+		if b_ALIGN or b_track or b_ANALYZE:
+			FNAME = os.path.isfile(ftest %('g', FLINITIAL))
+			if not FNAME:
+				print 'cannot find file: ', ftest %('g', FLINITIAL)
+else:
+	ImageDir = None
 
 if b_ANALYZE or b_track:
 	FLChannels = 1
@@ -133,7 +138,7 @@ if b_ALIGN:
 else:
 	AlignDir = ImageDir
 		
-if not b_Segment:
+if not b_Segment and (b_track or b_ANALYZE):
 	GETMASKS = bool_input('Do you have masks for the images (Y/N): ')
 	if GETMASKS:
 		MASKDIR = False
@@ -258,3 +263,7 @@ if b_ANALYZE or b_RENDER:
 	
 	AnalyzeARG = [AlignDir, FLSKIP, b_ANALYZE, ROIFILE, b_RENDER, ContourImage, AlignDir + '/' + Mask2Dir, CroptoROI, Writelineagetext, FLChannels, FLINITIAL, fname, Ftime, FLLABELS]
 	Image_analysis.run(AnalyzeARG)
+
+LANALYZE = bool_input('Do you wish to output csv files detailing data for individual lineages (Y/N): ')
+if LANALYZE:
+	Lineage_analysis.run()
