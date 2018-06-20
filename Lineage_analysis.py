@@ -119,7 +119,7 @@ def getdirname(prompt):
 
 def text_list():
 	LENGTH = int_input('Enter the number of lineages you wish to analyze: ')
-	print 'Please input the full name for each lineage (e.g. 0001, 0001-2, 10001)'
+	print 'Input the full name for each lineage (e.g. 0001, 0001-2, 10001).'
 	LIST = []
 	for l in range(LENGTH):
 		L = text_input('Lineage ' + str(l+1) + ': ')
@@ -181,7 +181,7 @@ def CSVOUT(trajname, frame,time,area,cellXY,celllabels,fl0,divisions,dtime):
 	f.close()	
 	
 	CURSOR_UP_ONE = '\x1b[1A'
-	print 'saving ' + trajname + '.csv                                        '                                    
+	print ('saving ' + trajname + '.csv                                 ')                                    
 	sys.stdout.write(CURSOR_UP_ONE) 
 ############################################################################
 ############################################################################
@@ -235,10 +235,10 @@ def main(argv):
 
 def run():
 	
-	OUTDIR = text_input('Name of directory to output files into (relative to working directory): ')
+	OUTDIR = text_input('Enter the name of the directory to output files into, relative to working directory: ')
 	if not os.path.isdir(OUTDIR):
 		os.system('mkdir ' + OUTDIR)
-	RUNALL = bool_input('Do you wish to get data for all of the lineages (to only analyze select lineages based on lineage name answer no; Y/N): ')
+	RUNALL = bool_input('Do you wish to get data for all of the lineages? (To only analyze select lineages based on lineage name answer no; Y/N): ')
 
 	#list of trajectories to get
 	if RUNALL:

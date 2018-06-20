@@ -229,13 +229,14 @@ def main(argv):
 		# measure mean fluorescence
 		FLMEASURE = []
 
-		if iFRAME in FLFILES:
-			for img in FLALL:
-				flint = ndimage.sum(img, label, range(nlabels))
-				flmean = flint / AREA
-				FLMEASURE.append(flmean)
-		else:
-			FLMEASURE.append(None)
+		if FLINITIAL != 0:
+			if iFRAME in FLFILES:
+				for img in FLALL:
+					flint = ndimage.sum(img, label, range(nlabels))
+					flmean = flint / AREA
+					FLMEASURE.append(flmean)
+			else:
+				FLMEASURE.append(None)
 			
 		if i == 1:
 			labelsum = ndimage.sum(label, label, range(nlabels))
@@ -291,7 +292,8 @@ def main(argv):
 
 
 	def runOnce(iFRAME):
-		print 'frame = ', iFRAME
+		print 'Processing frame ', iFRAME, '               '
+		sys.stdout.write('\x1b[1A') 
 		
 		# make labels from the masks
 		label1, nlabels1, FL1ALL = getLabeledMask(iFRAME)
@@ -412,21 +414,20 @@ def main(argv):
 
 
 
-	# get measurements in parallel
-	#~ MEASUREMENTS = []
-	#~ ARGLIST = []
-	#~ for iFRAME in range(FIRSTFRAME,FRAMEMAX,1):
-		#~ ARGLIST.append(iFRAME)
+	#~ # get measurements in parallel
+	MEASUREMENTS = []
+	ARGLIST = []
+	for iFRAME in range(FIRSTFRAME,FRAMEMAX,1):
+		ARGLIST.append(iFRAME)
 
-	#~ MEASUREMENTS = map(runOnce, ARGLIST)
+	MEASUREMENTS = map(runOnce, ARGLIST)
 
 
-	#~ #pdb.set_trace()
+	#pdb.set_trace()
 
-	#~ ############################################################################
 	############################################################################
-
-	#~ # save results
+	#~ ############################################################################
+	#~ # save results - for use when running piecemeal
 	#~ fpkl = open('trackMasks.pkl', 'wb')
 	#~ pickle.dump(MEASUREMENTS, fpkl, protocol=pickle.HIGHEST_PROTOCOL)
 	#~ fpkl.close()
@@ -438,284 +439,294 @@ def main(argv):
 	#~ with open('trackMasks.pkl', 'rb') as f:
 		#~ TRACKING_RESULTS = pickle.load(f)
 	
-	#~ TRACKING_RESULTS = MEASUREMENTS
-	#~ # unpack results into handy variables
-	#~ iFRAME, label, nlabels, CELLSTATS, DISTMAT, FLMEASURE = zip(*TRACKING_RESULTS)
+	TRACKING_RESULTS = MEASUREMENTS
+	# unpack results into handy variables
+	iFRAME, label, nlabels, CELLSTATS, DISTMAT, FLMEASURE = zip(*TRACKING_RESULTS)
 
-	#~ # cell statistics specifically
-	#~ comXY, celllabels1, AREA = zip(*CELLSTATS)
+	# cell statistics specifically
+	comXY, celllabels1, AREA = zip(*CELLSTATS)
 
-	#~ # number of fluorescence channels
-	#~ FLN = len(FLMEASURE[0])
+	# number of fluorescence channels
+	FLN = len(FLMEASURE[0])
 
-	############################################################################
-	############################################################################
-	#~ #get total cell data
-	#~ #get total cell data
-	#~ # total number of frames
-	#~ iTN = len(FLMEASURE)
+	#~ ############################################################################
+	#~ ############################################################################
+	#get total cell data
+	if FLINITIAL != 0:
+		# total number of frames
+		iTN = len(FLMEASURE)
 
-	#~ # place to save mean and std data
-	#~ FLMEANALL = []
-	#~ FLMEANALLFILTERED = []
-	#~ FLMEANALLBACKGROUND = []
-	#~ FLSTDALL = []
-	#~ FLMEDIANALL = []
+		# place to save mean and std data
+		FLMEANALL = []
+		FLMEANALLFILTERED = []
+		FLMEANALLBACKGROUND = []
+		FLSTDALL = []
+		FLMEDIANALL = []
 
-	#~ # plot mean and std. dev. intensity vs. time across cells
-	#~ for ifl in range(0,FLN):
-		#~ print 'IFL =', ifl
-		
-		#~ fln = []
-		#~ fltime = []
-		#~ flmean = []
-		#~ flstd = []
-		#~ flmedian = []
-		
-		#~ # for iT in range(0,iTN,dPeriodFL):
-		#~ for iT in range((FLINITIAL-FIRSTFRAME),(FRAMEMAX-FIRSTFRAME),dPeriodFL):
-			#~ print iT, ifl
-			#~ flframe = iT+FIRSTFRAME
-			#~ #pdb.set_trace()
-			#~ fl = np.array(FLMEASURE[iT][ifl])
-			#~ area = np.array(AREA[iT])
-			#~ iselect = np.where((area>=AREAMIN)*(area<=AREAMAX))[0]
+		# plot mean and std. dev. intensity vs. time across cells
+		print 'Analyzing total cell fluorescence               '
+		for ifl in range(0,FLN):
+			#print 'analyzing fluorescence channel ', ifl + 1, '           '
+			#sys.stdout.write('\x1b[1A') 
 			
-			#~ fln.append(len(iselect))
-			#~ fltime.append(dt*flframe)
-			#~ flmean.append(np.mean(fl[iselect]))
-			#~ flmedian.append(np.median(fl[iselect]))
-			#~ flstd.append(np.std(fl[iselect]))
+			fln = []
+			fltime = []
+			flmean = []
+			flstd = []
+			flmedian = []
+			
+			# for iT in range(0,iTN,dPeriodFL):
+			for iT in range((FLINITIAL-FIRSTFRAME),(FRAMEMAX-FIRSTFRAME),dPeriodFL):
+				#print iT, ifl
+				flframe = iT+FIRSTFRAME
+				#pdb.set_trace()
+				fl = np.array(FLMEASURE[iT][ifl])
+				area = np.array(AREA[iT])
+				iselect = np.where((area>=AREAMIN)*(area<=AREAMAX))[0]
+				
+				fln.append(len(iselect))
+				fltime.append(dt*flframe)
+				flmean.append(np.mean(fl[iselect]))
+				flmedian.append(np.median(fl[iselect]))
+				flstd.append(np.std(fl[iselect]))
 
-		#~ # save background for later use
-		#~ #print 'flmean = ', flmean
-		#~ FLMEANALL.append(flmean)
-		#~ FLMEDIANALL.append(flmedian)
-		#~ FLSTDALL.append(flstd)
-		#~ FLMEANALLFILTERED.append(filterData1(flmean))
-		#~ FLMEANALLBACKGROUND.append(backgroundData2(flmean))
+			# save background for later use
+			#print 'flmean = ', flmean
+			FLMEANALL.append(flmean)
+			FLMEDIANALL.append(flmedian)
+			FLSTDALL.append(flstd)
+			FLMEANALLFILTERED.append(filterData1(flmean))
+			FLMEANALLBACKGROUND.append(backgroundData2(flmean))
 
-	#~ with open('global-cell-statistics.pkl', 'wb') as f:
-		#~ pickle.dump((fltime,fln,FLMEANALL,FLMEDIANALL,FLSTDALL,FLMEANALLFILTERED,FLMEANALLBACKGROUND), f, protocol=pickle.HIGHEST_PROTOCOL)
+		with open('global-cell-statistics.pkl', 'wb') as f:
+			pickle.dump((fltime,fln,FLMEANALL,FLMEDIANALL,FLSTDALL,FLMEANALLFILTERED,FLMEANALLBACKGROUND), f, protocol=pickle.HIGHEST_PROTOCOL)
+		
 		
 
+		#save data to CSV
+		#need to loop through number of channels
 
-	#~ #save data to CSV
-	#~ #need to loop through number of channels
+		f = open(cellstatCSV, 'wb')
+		f.write('time,')
+		f.write('cell count,')
+		for lmn in range(len(FLMEANALL)):
+			f.write('%s mean,' %FLLABELS[lmn])
+			f.write('%s std.,' %FLLABELS[lmn])
+			f.write('%s median,' %FLLABELS[lmn])
+		f.write('\n')
 
-	#~ f = open(cellstatCSV, 'wb')
-	#~ f.write('time,')
-	#~ f.write('cell count,')
-	#~ for lmn in range(len(FLMEANALL)):
-		#~ f.write('%s mean,' %FLLABELS[lmn])
-		#~ f.write('%s std.,' %FLLABELS[lmn])
-		#~ f.write('%s median,' %FLLABELS[lmn])
-	#~ f.write('\n')
+		for ijk in range(len(fltime)):
+			f.write(str(fltime[ijk]) + ',')
+			f.write(str(fln[ijk]) + ',')
+			for lmn in range(len(FLMEANALL)):
+				f.write(str(FLMEANALL[lmn][ijk]) + ',')
+				f.write(str(FLSTDALL[lmn][ijk]) + ',')
+				f.write(str(FLMEDIANALL[lmn][ijk]) + ',')
+			f.write('\n')			
 
-	#~ for ijk in range(len(fltime)):
-		#~ f.write(str(fltime[ijk]) + ',')
-		#~ f.write(str(fln[ijk]) + ',')
-		#~ for lmn in range(len(FLMEANALL)):
-			#~ f.write(str(FLMEANALL[lmn][ijk]) + ',')
-			#~ f.write(str(FLSTDALL[lmn][ijk]) + ',')
-			#~ f.write(str(FLMEDIANALL[lmn][ijk]) + ',')
-		#~ f.write('\n')			
+		f.close()	
+			
+		#pdb.set_trace()
 
-	#~ f.close()	
+	# begin tracking proper
+
+	# find many trajectories by starting at a multitude of frames
+	FRAMEMAXLIST = range(FRAMEMAX,(FIRSTFRAME+MINTRAJLENGTH),-1)
+	# FRAMEMAXLIST = [FRAMEMAX,FRAMEMAX-30,FRAMEMAX-30*2,FRAMEMAX-30*3,FRAMEMAX-30*4]
+
+	# current number of trajectories
+	TRAJCOUNT = 0
+
+	# store trajectories
+	TRAJ = []
+
+	# keep track of which indices are visited
+	VISITED = []
+	for ijk in range(FRAMEMAX+1):
+		VISITED.append([])
+
+
+	print 'Tracking cells'
+	# scan through the final frame
+	for FRAMEMAX in FRAMEMAXLIST:
+		print 'framemax ', FRAMEMAX, '              '
+		#sys.stdout.write('\x1b[1A') 
+
+		# scan all cell ID's at the final frame
+		cellIDStart = range(nlabels[FRAMEMAX-FIRSTFRAME-1])
+
+		# current cell ID
+		cellID = 0
+
+		# loop
+		for cellID in cellIDStart:
+			#print 'tracking cell ID: ', cellID
+
+			# frame
+			frame = []
+
+			# time
+			time = []
+
+			# area
+			area = []
+
+			# yfp
+			if FLN == 1:
+				fl0 = []
+			
+			if FLN == 2:
+				# cfp
+				fl1 = []
 		
-	#~ #pdb.set_trace()
-
-	#~ # begin tracking proper
-
-	#~ # find many trajectories by starting at a multitude of frames
-	#~ FRAMEMAXLIST = range(FRAMEMAX,(FIRSTFRAME+MINTRAJLENGTH),-1)
-	#~ # FRAMEMAXLIST = [FRAMEMAX,FRAMEMAX-30,FRAMEMAX-30*2,FRAMEMAX-30*3,FRAMEMAX-30*4]
-
-	#~ # current number of trajectories
-	#~ TRAJCOUNT = 0
-
-	#~ # store trajectories
-	#~ TRAJ = []
-
-	#~ # keep track of which indices are visited
-	#~ VISITED = []
-	#~ for ijk in range(FRAMEMAX+1):
-		#~ VISITED.append([])
-
-
-
-	#~ # scan through the final frame
-	#~ for FRAMEMAX in FRAMEMAXLIST:
-		#~ print 'framemax ', FRAMEMAX
-
-		#~ # scan all cell ID's at the final frame
-		#~ cellIDStart = range(nlabels[FRAMEMAX-FIRSTFRAME-1])
-
-		#~ # current cell ID
-		#~ cellID = 0
-
-		#~ # loop
-		#~ for cellID in cellIDStart:
-			#~ #print 'tracking cell ID: ', cellID
-
-			#~ # frame
-			#~ frame = []
-
-			#~ # time
-			#~ time = []
-
-			#~ # area
-			#~ area = []
-
-			#~ # yfp
-			#~ fl0 = []
+			# flag for a "bad" trajectory
+			bBad = False
 			
-			#~ if FLN == 2:
-				#~ # cfp
-				#~ fl1 = []
-		
-			#~ # flag for a "bad" trajectory
-			#~ bBad = False
+			#for cell positions
+			cellXY = []
 			
-			#~ #for cell positions
-			#~ cellXY = []
-			
-			#~ #for cell label
-			#~ celllabels = []
+			#for cell label
+			celllabels = []
 
-			#~ loop = 0
+			loop = 0
 
-			#~ for iT in range(FRAMEMAX-FIRSTFRAME-1, 0, -1):
+			for iT in range(FRAMEMAX-FIRSTFRAME-1, 0, -1):
 			
-				#~ # mark cell as visited if not visited, otherwise end trajectory
-				#~ if (cellID in VISITED[iT]):
-					#~ bBad = True
-				#~ else:
-					#~ VISITED[iT].append(cellID)
+				# mark cell as visited if not visited, otherwise end trajectory
+				if (cellID in VISITED[iT]):
+					bBad = True
+				else:
+					VISITED[iT].append(cellID)
 				
 
-				#~ # find next best cell
-				#~ dist = DISTMAT[iT-1]
+				# find next best cell
+				dist = DISTMAT[iT-1]
 
-				#~ # optionally print out shape information	
-				#~ # print iT, cellID, dist.shape, nlabels[iT], nlabels[iT-1]
+				# optionally print out shape information	
+				# print iT, cellID, dist.shape, nlabels[iT], nlabels[iT-1]
 
 
-				#~ # area
-				#~ area1 = AREA[iT][cellID]
-				#~ if (not ( (area1>=AREAMIN) and (area1<=AREAMAX) )):
-					#~ #print 'bad area ', area1, ' cell ', cellID
-					#~ bBad = True
+				# area
+				area1 = AREA[iT][cellID]
+				if (not ( (area1>=AREAMIN) and (area1<=AREAMAX) )):
+					#print 'bad area ', area1, ' cell ', cellID
+					bBad = True
 					
-				#~ # area of potential matches
-				#~ area2 = np.array(AREA[iT-1])
+				# area of potential matches
+				area2 = np.array(AREA[iT-1])
 				
-				#~ iselect2 = np.where((area2>=AREAMIN)*(area2<=AREAMAX))[0]
-				#~ # print iselect2
+				iselect2 = np.where((area2>=AREAMIN)*(area2<=AREAMAX))[0]
+				# print iselect2
 		
-				#~ dist2 = np.squeeze(dist[cellID,:].toarray())
-				#~ dist2 = dist2[iselect2]
+				dist2 = np.squeeze(dist[cellID,:].toarray())
+				dist2 = dist2[iselect2]
 			
-				#~ cellID2 = iselect2[np.argmax(dist2)]
-				#~ distmax = np.amax(dist2)
+				cellID2 = iselect2[np.argmax(dist2)]
+				distmax = np.amax(dist2)
 			
-				#~ # record current data
+				# record current data
 				
-				#~ #print 'iT =', iT, 'cellID = ', cellID
-				#~ #iFRAME if off from iT by 1 so add 1 to get frame
-				#~ frame.append(iT+FIRSTFRAME)
+				#print 'iT =', iT, 'cellID = ', cellID
+				#iFRAME if off from iT by 1 so add 1 to get frame
+				frame.append(iT+FIRSTFRAME)
 					
-				#~ CELLX = comXY[iT][0][cellID]
-				#~ CELLY = comXY[iT][1][cellID]
-				#~ CELLXY = [CELLX, CELLY]
-				#~ #print cellXY
-				#~ cellXY.append(CELLXY)
+				CELLX = comXY[iT][0][cellID]
+				CELLY = comXY[iT][1][cellID]
+				CELLXY = [CELLX, CELLY]
+				#print cellXY
+				cellXY.append(CELLXY)
 				
-				#~ celllabel = celllabels1[iT][cellID]
-				#~ framelabel = label[iT]
-				#~ celllabel = np.where(framelabel == celllabel)
-				#~ celllabel = np.column_stack(celllabel)
-				#~ celllabels.append(celllabel)
+				celllabel = celllabels1[iT][cellID]
+				framelabel = label[iT]
+				celllabel = np.where(framelabel == celllabel)
+				celllabel = np.column_stack(celllabel)
+				celllabels.append(celllabel)
 				
-				#~ time.append(dt*(iT+FIRSTFRAME))
-				#~ area.append(area1)
-				#~ if (((iT+FIRSTFRAME - FLINITIAL) % dPeriodFL == 0) and ((iT + FIRSTFRAME) >= FLINITIAL)):
-					#~ try:
-						#~ fl0.append(FLMEASURE[iT][0][cellID])
-						#~ if FLN == 2:
-							#~ fl1.append(FLMEASURE[iT][1][cellID])
-					#~ except: 
-						#~ print 'no fl data for ' + str(iT) 
-				#~ else:
-					#~ fl0.append(None)
-					#~ if FLN == 2:
-						#~ fl1.append(None)
+				time.append(dt*(iT+FIRSTFRAME))
+				area.append(area1)
+				if FLN != 0:
+					if (((iT+FIRSTFRAME - FLINITIAL) % dPeriodFL == 0) and ((iT + FIRSTFRAME) >= FLINITIAL)):
+						try:
+							if FLN == 1:
+								fl0.append(FLMEASURE[iT][0][cellID])
+							if FLN == 2:
+								fl1.append(FLMEASURE[iT][1][cellID])
+						except: 
+							print 'no fl data for ' + str(iT) + '              '
+					else:
+						if FLN == 1:
+							fl0.append(None)
+						if FLN == 2:
+							fl1.append(None)
 					
 
-				#~ # area in the previous time
-				#~ area2 = AREA[iT-1][cellID2]
+				# area in the previous time
+				area2 = AREA[iT-1][cellID2]
 
 
-				#~ ####################
-				#~ ####################
+				####################
+				####################
 
-				#~ # only check if not bad
-				#~ if (not bBad):
+				# only check if not bad
+				if (not bBad):
 				
-					#~ # check for wrong rate of change for area
-					#~ if ((area2-area1)/area1 < -0.6):
-						#~ bBad = True
-						#~ #print 'cell ', cellID, ' failed due to area shrinkage = ', (area2-area1)/area1
-						#~ #print '\tarea 1 = ', area1
-						#~ #print '\tarea 2 = ', area2
+					# check for wrong rate of change for area
+					if ((area2-area1)/area1 < -0.6):
+						bBad = True
+						#print 'cell ', cellID, ' failed due to area shrinkage = ', (area2-area1)/area1
+						#print '\tarea 1 = ', area1
+						#print '\tarea 2 = ', area2
 
-					#~ # check for strong overlap
-					#~ if ((distmax/area1) < 0.5):
-						#~ bBad = True
-						#~ #print 'cell ', cellID, ' failed due to low overlap = ', (distmax/area1)
-						#~ #print '\tarea 1 = ', area1
-						#~ #print '\tarea 2 = ', area2
+					# check for strong overlap
+					if ((distmax/area1) < 0.5):
+						bBad = True
+						#print 'cell ', cellID, ' failed due to low overlap = ', (distmax/area1)
+						#print '\tarea 1 = ', area1
+						#print '\tarea 2 = ', area2
 
-				#~ if (bBad):
-					#~ break
+				if (bBad):
+					break
 				
 
-				#~ ####################
-				#~ ####################
+				####################
+				####################
 
-				#~ cellID = cellID2
+				cellID = cellID2
 		
-				#~ # pdb.set_trace()
+				# pdb.set_trace()
 		
 
-			#~ # if ((np.max(flarea)<800) and (not bBad)):
-			#~ # if ((len(fltime)>100) and (np.max(flarea)<800)):
-			#~ #pdb.set_trace()
-			#~ #print 'fmeasures ', fltime, np.mean(flarea), np.max(fl0)
+			# if ((np.max(flarea)<800) and (not bBad)):
+			# if ((len(fltime)>100) and (np.max(flarea)<800)):
+			#pdb.set_trace()
+			#print 'fmeasures ', fltime, np.mean(flarea), np.max(fl0)
 			
-			#~ #if ((len(fltime)>MINTRAJLENGTH) and (np.mean(flarea)<500) and (np.max(fl0)<4000)):
-			#~ if ((len(frame)>MINTRAJLENGTH)):				
-				#~ if FLN == 2:
-					#~ TRAJ.append((frame,time,area, cellXY, celllabels,fl0, fl1))
-				#~ else:
-					#~ TRAJ.append((frame,time,area, cellXY, celllabels,fl0))
+			#if ((len(fltime)>MINTRAJLENGTH) and (np.mean(flarea)<500) and (np.max(fl0)<4000)):
+			if ((len(frame)>MINTRAJLENGTH)):				
+				if FLN == 2:
+					TRAJ.append((frame,time,area, cellXY, celllabels,fl0, fl1))
+				elif FLN == 1:
+					TRAJ.append((frame,time,area, cellXY, celllabels,fl0))
+				else:
+					TRAJ.append((frame,time,area, cellXY, celllabels))
 				
 
 
-				#~ #pdb.set_trace()
-				#~ TRAJCOUNT += 1
-				#~ print TRAJCOUNT, ' trajectories'
+				#pdb.set_trace()
+				TRAJCOUNT += 1
+				print TRAJCOUNT, ' trajectories', '                  '
+				sys.stdout.write('\x1b[1A') 
 				
 
-	#~ print TRAJCOUNT, ' total trajectories'
+	print '\n', TRAJCOUNT, ' total trajectories'
 	
-	#~ #pickle file to output when running tests
+	#~ #pickle file to output when running piecemeal
 	#~ with open('raw_traj.pkl', 'wb') as f:
 		#~ pickle.dump(TRAJ, f, protocol=pickle.HIGHEST_PROTOCOL)
 	# pdb.set_trace()
 
-	with open('raw_traj.pkl', 'rb') as f:
-		TRAJ = pickle.load(f)
+	#~ with open('raw_traj.pkl', 'rb') as f:
+		#~ TRAJ = pickle.load(f)
 
 	########################################################################
 	########################################################################
@@ -745,10 +756,16 @@ def main(argv):
 
 	#actually go through all the trajectories
 	for traj in TRAJ:
-		frame,time,area, cellXY, celllabels,fl0 = traj
+		if FLN == 0:
+			frame,time,area, cellXY, celllabels = traj
+		if FLN == 1:
+			frame,time,area, cellXY, celllabels,fl0 = traj
+		if FLN == 2:
+			frame,time,area, cellXY, celllabels,fl0,fl1 = traj
 		trajnum= trajnum+1
 
-		print 'traj = ', trajnum, 'cellXY = ', len(cellXY)
+		print 'Processing trajectory ', trajnum, '           '
+		sys.stdout.write('\x1b[1A') 
 		
 		#eachtraj represents each frame a trajectory is in
 		for eachtraj in range(0,len(cellXY)):
@@ -756,7 +773,7 @@ def main(argv):
 			label = celllabels[eachtraj]
 			
 			if len(label) > 900000:
-				print 'skipping traj ', trajnum, 'label is too large'
+				print 'Skipping traj ', trajnum, 'label is too large              '
 				
 			else:	
 				#print cell
@@ -789,7 +806,12 @@ def main(argv):
 	#make NEWTRAJ list using new TRAJ names
 	for key in NEWTRAJ:
 		traj = TRAJ[key]
-		frame,time,area,cellXY,celllabels,fl0 = traj
+		if FLN == 0:
+			frame,time,area, cellXY, celllabels = traj
+		if FLN == 1:
+			frame,time,area, cellXY, celllabels,fl0 = traj
+		if FLN == 2:
+			frame,time,area, cellXY, celllabels,fl0,fl1 = traj
 		trajname = NEWTRAJ[key]
 		#calculate doubling times
 		try:
@@ -811,9 +833,15 @@ def main(argv):
 				dtime = 'nan'
 		except:
 			dtime = 'nan'
-		traj = trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime
+		if FLN == 0:
+			traj = trajname,frame,time,area,cellXY,celllabels,divisions,dtime
+		if FLN == 1:
+			traj = trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime
+		if FLN == 2:
+			traj = trajname,frame,time,area,cellXY,celllabels,fl0,fl1,divisions,dtime
 		NEWTRAJLIST.append(traj)
-		print len(NEWTRAJLIST), 'lineages'
+		print 'Processed ', len(NEWTRAJLIST), ' lineages'
+		sys.stdout.write('\x1b[1A') 
 		
 	if writeLabels:
 		if writeNumbers:
@@ -821,14 +849,16 @@ def main(argv):
 			#write text to images and save
 			for key in images:
 				image = writeText(key)
-				print 'saving ... ', key
+				print 'Saving ... ', key, '             '
+				sys.stdout.write('\x1b[1A') 
 				savename = rootdir + labelname %(key)
 				misc.imsave(savename, image)
 
 		else:
 			for key in images:
 				image = images[key]
-				print 'saving ... ', key
+				print 'Saving ... ', key, '             '
+				sys.stdout.write('\x1b[1A') 
 				savename = rootdir + labelname %(key)
 				misc.imsave(savename, image)
 
@@ -844,22 +874,29 @@ def main(argv):
 	etimes = []
 	meanAREA = []
 	stdAREA = []
-	meanFL = []
-	stdFL = []
+	if FLN == 1:
+		meanFL = []
+		stdFL = []
 	dtimes = []
 
 
 	for traj in NEWTRAJLIST:
-		trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime = traj
+		if FLN == 0:
+			trajname,frame,time,area,cellXY,celllabels,divisions,dtime = traj
+		if FLN == 1:
+			trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime = traj
+		if FLN == 2:
+			trajname,frame,time,area,cellXY,celllabels,fl0,fl1,divisions,dtime = traj
 		name.append(trajname)
 		itimes.append(time[1])
 		etimes.append(time[-1])
 		area= np.array(area)
 		meanAREA.append(np.mean(area))
 		stdAREA.append(np.std(area))
-		fl0 = np.array(fl0, dtype = np.float)
-		meanFL.append(np.nanmean(fl0))
-		stdFL.append(np.nanstd(fl0))
+		if FLN == 1:
+			fl0 = np.array(fl0, dtype = np.float)
+			meanFL.append(np.nanmean(fl0))
+			stdFL.append(np.nanstd(fl0))
 		dtimes.append(dtime)
 
 
@@ -870,8 +907,9 @@ def main(argv):
 	ETIMES = np.array(etimes)
 	MEANAREA = np.array(meanAREA)
 	STDAREA = np.array(stdAREA)
-	MEANFL = np.array(meanFL)
-	STDFL = np.array(stdFL)
+	if FLN == 1:
+		MEANFL = np.array(meanFL)
+		STDFL = np.array(stdFL)
 	DTIMES = np.array(dtimes)
 
 	f = open(lineageCSV, 'wb')
@@ -880,8 +918,9 @@ def main(argv):
 	f.write('initial time,')
 	f.write('mean area,')
 	f.write('std. area,')
-	f.write('mean fluorescence,')
-	f.write('std. fluorescence,')
+	if FLN == 1:
+		f.write('mean fluorescence,')
+		f.write('std. fluorescence,')
 	f.write('doubling time')
 	f.write('\n')
 
@@ -891,8 +930,9 @@ def main(argv):
 		f.write(str(ETIMES[ijk]) + ',')
 		f.write(str(MEANAREA[ijk]) + ',')
 		f.write(str(STDAREA[ijk]) + ',')
-		f.write(str(MEANFL[ijk]) + ',')
-		f.write(str(STDFL[ijk]) + ',')
+		if FLN == 1:
+			f.write(str(MEANFL[ijk]) + ',')
+			f.write(str(STDFL[ijk]) + ',')
 		f.write(str(DTIMES[ijk]) + ',')
 		f.write('\n')			
 
@@ -905,15 +945,17 @@ def main(argv):
 	#traj = frame,time,area, cellXY, celllabels,fl0
 	with open('lineagetracking.pkl', 'wb') as f:
 		pickle.dump(NEWTRAJLIST, f, protocol=pickle.HIGHEST_PROTOCOL)
-
-	with open('lineagetrackingsummary.pkl', 'wb') as f:
-		pickle.dump((NAMES,ITIMES,ETIMES,MEANAREA,STDAREA,MEANFL,STDFL), f, protocol=pickle.HIGHEST_PROTOCOL)
+	
+	if FLN !=0:
+		with open('lineagetrackingsummary.pkl', 'wb') as f:
+			pickle.dump((NAMES,ITIMES,ETIMES,MEANAREA,STDAREA,MEANFL,STDFL), f, protocol=pickle.HIGHEST_PROTOCOL)
 
 	#saves TOWRITE in pkl file to use in Image_Analysis.ipynb
 	with open('lineagetext.pkl', 'wb') as f:
 		pickle.dump(TOWRITE, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
+	print '\nCell tracking complete'
 ####################################################################
 ####################################################################
 

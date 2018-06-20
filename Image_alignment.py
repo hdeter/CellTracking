@@ -44,7 +44,7 @@ def main(argv):
 
 	#the name of the fluorescence files
 	#currently the script requires the difference between phase images contain -p- and fluorescence contain -g-
-	flname = INDIR + '/20171212_book-g-%03d.tif'
+	flname = INDIR + '/' + argv[3] + '-g-%03d.tif'
 
 	#change the following based on your imageset
 	#first frame with fluorescence data
@@ -67,9 +67,10 @@ def main(argv):
 	#the following is so that fluorescence images are shifted as well
 	FLFILES = []
 	#loop parameters should be for every nth image that is shifted
-	for flfile in range (FLINITIAL,NFILES+FLINITIAL,FLSKIP):
-		flnamed = flname % flfile
-		FLFILES.append(flnamed)
+	if FLINITIAL != 0:
+		for flfile in range (FLINITIAL,NFILES+FLINITIAL,FLSKIP):
+			flnamed = flname % flfile
+			FLFILES.append(flnamed)
 	#######################################################################
 	#######################################################################
 
@@ -244,11 +245,12 @@ def main(argv):
 	Bdiff = [0,0]
 	Sdiff = [0,0]
 
-	print ('calculating image shift')
+
 	DIFF = dict()
 	for fname in FILES:
 		diff = FFTCompare(imgLoad(FILES[REFIND],1.0), imgLoad(fname,1.0))
-		print fname
+		print 'calculating shift; ', fname, '           '
+		sys.stdout.write('\x1b[1A') 
 		DIFF[fname] = diff
 		if diff[0] > Bdiff[0]:
 			Bdiff[0] = diff[0]
@@ -260,15 +262,13 @@ def main(argv):
 			Sdiff[1] = diff[1]
 
 	#pdb.set_trace()
-	print ('done')
+	print ('\nfinished calculations')
 
 	#######################################################################
 	#######################################################################
 	# make directory if it does not exist
 	if (not os.path.isdir(OUTDIR)):
 		os.system('mkdir ' + OUTDIR)
-
-	print ('shifting images')
 
 	if CROPIMAGE:
 		#make even width and length
@@ -284,9 +284,15 @@ def main(argv):
 		Bdiff[1] = Bdiff[1] * -1
 		Sdiff[0] = Sdiff[0] * -1
 		Sdiff[1] = Sdiff[1] * -1
-
+		
+	i = 0
 	for fname in FILES:
-		print fname
+		#print output
+		i += 1
+		print 'shifting ', fname, '       '
+		sys.stdout.write('\x1b[1A') 
+		
+		#process files
 		img = imgLoad(fname,1.0)
 		df = DIFF[fname]
 		fname_stripped = fname.split('/')[-1]
@@ -307,7 +313,7 @@ def main(argv):
 			gname_stripped = gname.split('/')[-1]
 			cv.imwrite(OUTDIR + '/' + gname_stripped, gimg)
 		#pdb.set_trace()
-	print ('done')
+	print ('\ndone')
 
 
 ####################################################################

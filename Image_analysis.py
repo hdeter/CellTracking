@@ -163,7 +163,10 @@ def main(argv):
 		# all values are scaled by the value variation of the channel (across all time)
 		## used to shift the image values (zero means no shift; + is darker; - is brighter)
 		CONFIGVARSimg_shift = dict()
-		CONFIGVARSimg_shift[1] = -1.0
+		if CMAX == 0:
+			CONFIGVARSimg_shift[1] = 0.0
+		else:
+			CONFIGVARSimg_shift[1] = -1.0
 		CONFIGVARSimg_shift[2] = 1
 		CONFIGVARSimg_shift[3] = 1
 		CONFIGVARSimg_shift[4] = 0.0
@@ -486,6 +489,7 @@ def main(argv):
 			# if there is an error, this indicates the data has reached an end
 			try:
 				for imgC in range(1,MaxC+1):
+					
 					if imgC == 1:
 						imgC = 'p'
 					elif imgC == 2:
@@ -500,9 +504,9 @@ def main(argv):
 					# load images
 					# transpose image, because it is swapped compared to convection
 					imgs.append(imgLoad(fname1,imgScale).astype(np.double).T)
+					
 			except:
 				break
-
 
 
 			# apply a local median blur to get rid of shot noise
@@ -774,7 +778,8 @@ def main(argv):
 		# names just for this one image
 		fnames = dict()
 		imgs = dict()
-
+	
+		
 		# true once the composite color image is made
 		bMadeColor = False
 
@@ -818,8 +823,8 @@ def main(argv):
 					newtrajnum = line[0]
 					cv.putText(IMG, newtrajnum, XY, cv.FONT_HERSHEY_DUPLEX, .3, (0,0,0), 1)
 			except:
-				print 'frame', index+1, 'has no lineage text'
-		
+				print 'frame', FRAMEMIN+(index*frameSkip), 'has no lineage text'
+				
 		if CroptoROI:
 			#fix this later to work with multiple ROI's
 			cropimgs = ROIcrop(IMG, ROICROPFILE, XY_loc)
@@ -830,7 +835,8 @@ def main(argv):
 		
 		
 		# add text
-		cv.putText(IMG, ('XY%d, ' % XY_loc) + ('time = %0.01f min.' % (timePerFrame*(frames[index]-1))), (25,25), cv.FONT_HERSHEY_DUPLEX, 1.0, (1,1,1), 1)
+		#cv.putText(IMG, ('XY%d, ' % XY_loc) + ('time = %0.01f min.' % (timePerFrame*(frames[index]-1))), (25,25), cv.FONT_HERSHEY_DUPLEX, 1.0, (1,1,1), 1)
+		cv.putText(IMG, ('time = %0.01f min.' % (timePerFrame*(frames[index]-1))), (25,25), cv.FONT_HERSHEY_DUPLEX, 1.0, (1,1,1), 1)
 
 		###############################
 		###############################
@@ -844,9 +850,9 @@ def main(argv):
 		# write image, finally
 		# need to shift by lowest frame
 		if ContourImage:
-			cv.imwrite(CONFIGVARSfmtOutFileAll % (index-FRAMEMIN), IMG)
+			cv.imwrite(CONFIGVARSfmtOutFileAll % (index), IMG)
 		else:
-			cv.imwrite(CONFIGVARSfmtOutFileAll % (index-FRAMEMIN), IMG*255)
+			cv.imwrite(CONFIGVARSfmtOutFileAll % (index), IMG*255)
 
 		#pdb.set_trace()
 
@@ -1075,7 +1081,9 @@ def main(argv):
 		
 		CTARGETS = statNP_all[0]['mean'].keys()
 		print 'CTARGETS', CTARGETS
-		CTARGETS.remove(1)
+		if len(CTARGETS) >= 1:
+			CTARGETS.remove(1)
+
 
 		
 
@@ -1089,12 +1097,11 @@ def main(argv):
 			
 		if (bRenderMicroscopyVideo == True):
 			os.system('rm ' + CONFIGVARSfmtOutDIR + '*.png')
-
 			# only render if parameters are correct
 			for index in range(len(statNP['frame'])):
 				if ((FRAMEMIN<0) or (FRAMEMAX<0)) or ((index>=FRAMEMIN) and (index<=FRAMEMAX)):
 					renderImage(statNP, statNP_ref, XY_loc, index, FRAMEMIN,TOWRITE)
-
+			
 			ARG = 'avconv -y -framerate 10 -i ' + CONFIGVARSfmtOutFileAll + ' -c:v libx264 -pix_fmt yuv420p ' + pklfiletrim + ('_xy%d.mp4' % XY_loc)
 			print 'running command: ' + ARG
 			os.system(ARG)
@@ -1182,13 +1189,13 @@ def main(argv):
 		# pass as strings for compatibility
 		FRAMEMIN = '-1'
 		FRAMEMAX = '-1'
-		if (len(argv)>4):
-			print '!!! PARTIAL RENDERING !!!'
+		if (len(argv)>3):
+			#print '!!! PARTIAL RENDERING !!!'
 			# lowest frame number (NOT time) to render.  Default is 1.
 			FRAMEMIN = argv[3]
+		if (len(argv)>4):
 			# highest frame number (NOT time) to render.  Default is the final frame.
 			FRAMEMAX = argv[4]
-
 
 		###################
 		###################
@@ -1279,7 +1286,7 @@ if __name__ == "__main__":
 		b_RENDER = True
 
 		#Directory containing the images
-		ImageDir = 'Test'
+		ImageDir = 'Aligned'
 		AlignDir = ImageDir
 		#get working directory
 		WorkDir = os.getcwd()
@@ -1291,16 +1298,16 @@ if __name__ == "__main__":
 		#last frame of images
 		FRAMEMAX = 467
 		#first frame with fluorescence image
-		FLINITIAL = 449
+		FLINITIAL = 448
 		#frequency of fluorescence images (i.e. every nth frame)
-		FLSKIP = 10
+		FLSKIP = 1
 		#time between frames in minutes
 		Ftime = 0.5 #min
 		#number of fluorescence channels
-		FLChannels = 1
+		FLChannels = 0
 
 		#labels for fluorescence channels (must be strings)
-		FLLABELS = ['GFP']
+		FLLABELS = []
 		
 		#csv file containing ROI to analyze and/or crop to; if no file set to None
 		ROIFILE = None
@@ -1309,7 +1316,7 @@ if __name__ == "__main__":
 		#True if writing lineages to video (requires lineagetracking.pkl)
 		Writelineages = True
 		#True if contouring images (requires Masks)
-		ContourImage = False
+		ContourImage = True
 		#mask directory (relative to image directory) for contouring images (only needed if ContourImage = True)
 		Mask2Dir = 'Mask2'
 		

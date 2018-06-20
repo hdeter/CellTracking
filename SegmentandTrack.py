@@ -79,71 +79,86 @@ import TrackCellLineages
 import Lineage_analysis
 
 
-b_ALIGN = bool_input('Do you wish to Align images (Y/N): ')
-b_Segment = bool_input('Do you wish to train and/or apply a classifier (Y/N): ')
-b_track = bool_input('Do you wish to track cells (Y/N): ')
-b_ANALYZE = bool_input('Do you wish to analyze whole image fluorescence (Y/N): ')
-if b_ANALYZE:
-	b_RENDER = bool_input('Do you wish to render videos (Y/N): ')
-else:
-	b_RENDER = False
+b_ALIGN = bool_input('Do you wish to align images? (Y/N): ')
+b_Segment = bool_input('Do you wish to train and/or apply a classifier? (Y/N): ')
+b_track = bool_input('Do you wish to track cells? (Y/N): ')
 
-if b_ALIGN or b_Segment or b_track or b_ANALYZE:
+#only ask to output lineage csv if tracking pkl will be avaiable
+if not b_track:
+	b_tracked = os.path.isfile('lineagetracking.pkl')
+if b_track or b_tracked:
+	LANALYZE = bool_input('Do you wish to output csv files detailing data for individual lineages? (Y/N): ')
+else:
+	LANALYZE = False
+	
+b_ANALYZE = bool_input('Do you wish to analyze images (needed to get whole image fluorescence or render videos)? (Y/N): ')
+
+#only ask to render videos if analysis file will be available
+if not b_ANALYZE:
+	if os.path.isfile('data_' + AlignDir + '.pkl'):
+		b_RENDER = bool_input('Do you wish to render videos? (Y/N): ')
+else:
+	b_RENDER = bool_input('Do you wish to render videos? (Y/N): ')
+
+if b_ALIGN or b_Segment or b_track or b_ANALYZE or b_RENDER:
 	WorkDir = os.getcwd()
 	print 'current working directory is ', WorkDir
-	ImageDir = getdirname('What is the name of the image directory, relative to the working directory (e.g. Practice): ')
+	ImageDir = getdirname('Enter the name of the image directory, relative to the working directory (e.g. Practice): ')
 
-	FIRSTFRAME = int_input('First frame in dataset (e.g. 448): ')
+	FIRSTFRAME = int_input('Enter the number of the first frame in dataset (e.g. 448): ')
 
 if b_Segment or b_track:
-	FRAMEMAX = int_input('Last frame in dataset (e.g. 467): ')
+	FRAMEMAX = int_input('Enter the number of the last frame in dataset (e.g. 467): ')
 	
-if b_track or b_ANALYZE:
-	Ftime = float_input('What is the time per frame in minutes (e.g. 0.5): ')
+if b_track or b_ANALYZE or b_RENDER:
+	Ftime = float_input('Enter the time per frame in minutes (e.g. 0.5): ')
 	
-if b_ALIGN or b_track or b_ANALYZE:
-	FLINITIAL = int_input('First frame with fluorescence image (e.g. 449): ')
-	FLSKIP = int_input('Number of frames between fluorescence images (i.e. every nth image): ')	
-
-if b_ALIGN or b_Segment or b_track or b_ANALYZE:
+if b_ALIGN or b_track or b_ANALYZE or b_RENDER:
+	FLINITIAL = int_input('Enter the number of the first frame with a fluorescence image (e.g. 449; for no fluorescence enter 0): ')
+	FLSKIP = int_input('Enter the number of frames between fluorescence images (i.e. every nth image; for no fluorescence enter 0): ')	
+	
+if b_ALIGN or b_Segment or b_track or b_ANALYZE or b_RENDER:
 	FNAME = False
 	while not FNAME:
-		fname = text_input('Name of image files preceding channel and filenumber (e.g. 20171212_book): ')
+		fname = text_input('Enter the images\' filename preceding the channel and filenumber (e.g. 20171212_book): ')
 		ftest = ImageDir + '/' + fname + '-%s-%03d.tif'
 		FNAME = os.path.isfile(ftest %('p', FIRSTFRAME))
 		if not FNAME:
 			print 'cannot find file: ', ftest %('p', FIRSTFRAME)
 			continue
-		if b_ALIGN or b_track or b_ANALYZE:
+		if (b_ALIGN or b_track or b_ANALYZE) and FLINITIAL != 0:
 			FNAME = os.path.isfile(ftest %('g', FLINITIAL))
 			if not FNAME:
 				print 'cannot find file: ', ftest %('g', FLINITIAL)
 else:
 	ImageDir = None
 
-if b_ANALYZE or b_track:
-	FLChannels = 1
+if b_ANALYZE or b_track or b_RENDER:
+	if FLINITIAL == 0:
+		FLChannels = 0
+	else:
+		FLChannels = 1
 	FLLABELS = []
 	for i in range(FLChannels):
-		label = text_input('Enter name of fluorescense channel ' + str(i+1) +' (e.g. GFP): ')
+		label = text_input('Enter the name of fluorescence channel ' + str(i+1) +' (e.g. GFP): ')
 		FLLABELS.append(label)
 
 if b_ALIGN:
-	ROIALIGNFILE = bool_input('Do you have a csv file for a stationary area (Y/N): ')
+	ROIALIGNFILE = bool_input('Do you have a ROI file for a stationary area (Y/N): ')
 	if ROIALIGNFILE:
-		AlignROI = getfilename('Enter the path (relative to the working directory) to the csv file (e.g. Align_roi.csv): ')
+		AlignROI = getfilename('Enter the path to the csv file, relative to the working directory (e.g. Align_roi.csv): ')
 	else:
 		AlignROI = 'None'
-	AlignDir = text_input('Name of directory for output images (e.g. Aligned): ')
+	AlignDir = text_input('Enter the name of the directory to output images into (e.g. Aligned): ')
 else:
 	AlignDir = ImageDir
 		
-if not b_Segment and (b_track or b_ANALYZE):
-	GETMASKS = bool_input('Do you have masks for the images (Y/N): ')
+if not b_Segment and (b_track or b_ANALYZE or b_RENDER):
+	GETMASKS = bool_input('Do you have masks for the images? (Y/N): ')
 	if GETMASKS:
 		MASKDIR = False
 		while not MASKDIR:
-			Mask2Dir = text_input('Enter directory containing masks relative to ' + AlignDir + ': ')
+			Mask2Dir = text_input('Enter the name of the directory containing masks, relative to ' + AlignDir + ': ')
 			MASKDIR = os.path.isdir(AlignDir + '/' + Mask2Dir)
 			if not MASKDIR:
 				print 'could not find directory'
@@ -158,7 +173,7 @@ if b_ALIGN:
 if b_Segment:
 	IJPATH = False
 	while not IJPATH:
-		IMAGEJ = text_input('Enter absolute path to ImageJ executable file (e.g. /home/user/Downloads/Fiji.app/ImageJ-linux64): ')
+		IMAGEJ = text_input('Enter the absolute path to the Fiji executable file (e.g. /home/user/Downloads/Fiji.app/ImageJ-linux64): ')
 		IJPATH = os.path.isfile(IMAGEJ)
 		IJEX = os.access(IMAGEJ,os.X_OK)
 		if not IJPATH and IJEX:
@@ -170,30 +185,30 @@ if b_Segment:
 		while not openFiji:
 			print 'Please open an instance of Fiji. '
 			time.sleep(2)
-			openFiji = bool_input('Is there an open instance of Fiji (Y/N): ')
+			openFiji = bool_input('Is there an open instance of Fiji? (Y/N): ')
 			if not openFiji:
 				print 'Please open Fiji'
 		RunWeka.training(WekaARG1)
 	
-	ROUND2 = int_input('How many round of classification are you running (1 or 2): ')
+	ROUND2 = int_input('How many round of classification are you running? (1 or 2): ')
 	if 'linux' in IMAGEJ:
-		PROCESS = bool_input('Would you like to batch classify the images in the background (it is faster; Y/N): ')
+		PROCESS = bool_input('Would you like to batch classify the images in the background? (Y/N): ')
 	else:
 		PROCESS = False
 	if PROCESS:
-		CORES = int_input('How many processes are available to use for multiprocessing (set to 1 for no multiprocessing): ')
+		CORES = int_input('Enter how many processes are available to use for multiprocessing; set to 1 for no multiprocessing: ')
 	else:
 		CORES = None
 	if ROUND2 == 2:
 		
-		TRAINING = bool_input('Do you have a trained classifier (Y/N): ')
+		TRAINING = bool_input('Do you have a trained classifier? (Y/N): ')
 		if not TRAINING:
 			#train first classifier
 			training()
 		
 		#first batch classification
-		classifierfile1 = getfilename('Enter path to classifier relative to working directory (e.g. Aligned/classifier.model): ')
-		Mask1Dir = text_input('Enter name of directory to save masks within ' + AlignDir + ' (e.g. Mask1): ')
+		classifierfile1 = getfilename('Enter the path to the classifier, relative to the working directory (e.g. Aligned/classifier.model): ')
+		Mask1Dir = text_input('Enter the name of the directory within ' + AlignDir + ' to output masks into (e.g. Mask1): ')
 		runMask1Dir = AlignDir + '/' + Mask1Dir
 		
 		if not os.path.isdir(runMask1Dir):
@@ -205,16 +220,16 @@ if b_Segment:
 		
 		print 'continuing to second round of classification\n'
 	else:
-		runMask1Dir = getdirname('Enter directory containing images to classify relative to the working directory (e.g. Aligned/Mask1): ')
+		runMask1Dir = getdirname('Enter the name of the directory containing images to classify, relative to the working directory (e.g. Aligned/Mask1): ')
 		
-	TRAINING2 = bool_input('Do you have a second trained classifier (Y/N): ')
+	TRAINING2 = bool_input('Do you have a second trained classifier? (Y/N): ')
 	if not TRAINING2:
 		#train first classifier
 		training()
 	
 	#second batch classification
-	classifierfile2 = getfilename('Enter path to classifier relative to working directory (e.g. Aligned/classifier2.model): ')
-	Mask2Dir = text_input('Enter name of directory to save masks within ' + AlignDir + ' (e.g. Mask2): ')
+	classifierfile2 = getfilename('Enter the path to the classifier, relative to the working directory (e.g. Aligned/classifier2.model): ')
+	Mask2Dir = text_input('Enter the name of the directory within ' + AlignDir + ' to output masks into (e.g. Mask2): ')
 	runMask2Dir = AlignDir + '/' + Mask2Dir
 	
 	if not os.path.isdir(runMask2Dir):
@@ -233,20 +248,24 @@ if b_track:
 		AREAMIN = int_input('Enter the minimum cell area for tracking (e.g. 100): ')
 		AREAMAX = int_input('Enter the maximum cell area for tracking (e.g. 2500): ')
 		MINTRAJLENGTH = int_input('Enter the minimum number of frames to track cells through (e.g. 15): ')
+		if MINTRAJLENGTH >= FRAMEMAX - 2:
+			MINTRAJLENGTH = FRAMEMAX - 2
+			print 'Maximum length is 2 less the total number of frames.'
+			print 'Tracking through at least ', MINTRAJLENGTH, ' frames.'
 	else:
 		b_track = False
-		print ('tracking cells requires a mask directory')
+		print ('Tracking cells requires a mask directory.')
 
 if b_ANALYZE or b_RENDER:
-	ROIANALYZE = bool_input('Do you wish to analyze a region of interest (Y/N): ')
-	CroptoROI = bool_input('Do you want to crop the images based on an ROI (Y/N): ')
+	ROIANALYZE = bool_input('Do you wish to analyze a region of interest? (Y/N): ')
+	CroptoROI = bool_input('Do you wish to crop the images based on an ROI? (Y/N): ')
 	if ROIANALYZE or CroptoROI:
-		ROIFILE = getfilename('Enter the path (relative to the working directory) to the csv file for the ROI to analyze (e.g. ROI.csv): ')
+		ROIFILE = getfilename('Enter the path to the ROI file to analyze, relative to the working directory (e.g. ROI.csv): ')
 	else:
 		ROIFILE = 'None'
-	Writelineagetext = bool_input('Do you want to number the cells in the images based on lineage tracking (Y/N): ')
+	Writelineagetext = bool_input('Do you want to number the cells in the images based on lineage tracking? (Y/N): ')
 	if not Mask2Dir == 'None':
-		ContourImage = bool_input('Do you want to contour cells based on masks (Y/N): ')
+		ContourImage = bool_input('Do you want to outline cells based on masks? (Y/N): ')
 	else:
 		ContourImage = False
 		
@@ -254,16 +273,20 @@ if b_track:
 	TrackARG = [AlignDir, fname, Mask2Dir, LineageDir, FIRSTFRAME, FRAMEMAX, AREAMIN, AREAMAX,FLLABELS, Ftime, FLSKIP, FLINITIAL,MINTRAJLENGTH]
 	TrackCellLineages.run(TrackARG)
 	
+if LANALYZE:
+	Lineage_analysis.run()
+	
 if b_ANALYZE or b_RENDER:
 	if Writelineagetext:
 		WRITETEXT = os.path.isfile('lineagetext.pkl')
 		if not WRITETEXT:
-			print 'cannot find lineagetext.pkl to use for writing text'
+			print 'Cannot find lineagetext.pkl to use for writing text.'
 			Writelineagetext = False
-	
-	AnalyzeARG = [AlignDir, FLSKIP, b_ANALYZE, ROIFILE, b_RENDER, ContourImage, AlignDir + '/' + Mask2Dir, CroptoROI, Writelineagetext, FLChannels, FLINITIAL, fname, Ftime, FLLABELS]
+
+	if FLINITIAL == 0:
+		AnalyzeARG = [AlignDir, 1, b_ANALYZE, ROIFILE, b_RENDER, ContourImage, AlignDir + '/' + Mask2Dir, CroptoROI, Writelineagetext, FLChannels, FIRSTFRAME, fname, Ftime, FLLABELS]
+	else:
+		AnalyzeARG = [AlignDir, FLSKIP, b_ANALYZE, ROIFILE, b_RENDER, ContourImage, AlignDir + '/' + Mask2Dir, CroptoROI, Writelineagetext, FLChannels, FLINITIAL, fname, Ftime, FLLABELS]
 	Image_analysis.run(AnalyzeARG)
 
-LANALYZE = bool_input('Do you wish to output csv files detailing data for individual lineages (Y/N): ')
-if LANALYZE:
-	Lineage_analysis.run()
+

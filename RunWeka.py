@@ -132,10 +132,10 @@ def batchsegment(argv):
 		else:
 			images = len(imgfiles) - len(maskfiles)
 			if i % 2 == 1:
-				print '\\ classifying %03d images' %images
+				print '\\ images remaining: %d                 ' %images
 				sys.stdout.write(CURSOR_UP_ONE) 
 			else:
-				print '/ classifying %03d images' %images
+				print '/ images remaining: %d                   ' %images
 				sys.stdout.write(CURSOR_UP_ONE) 
 	print 'finished classification                    '
 		
