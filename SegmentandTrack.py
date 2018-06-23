@@ -255,8 +255,8 @@ if b_track:
 		AREAMIN = int_input('Enter the minimum cell area for tracking (e.g. 100): ')
 		AREAMAX = int_input('Enter the maximum cell area for tracking (e.g. 2500): ')
 		MINTRAJLENGTH = int_input('Enter the minimum number of frames to track cells through (e.g. 15): ')
-		if MINTRAJLENGTH >= FRAMEMAX - 2:
-			MINTRAJLENGTH = FRAMEMAX - 2
+		if MINTRAJLENGTH >= FRAMEMAX - FIRSTFRAME - 2:
+			MINTRAJLENGTH = FRAMEMAX - FIRSTFRAME - 2
 			print 'Maximum length is 2 less the total number of frames.'
 			print 'Tracking through at least ', MINTRAJLENGTH, ' frames.'
 	else:
