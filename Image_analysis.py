@@ -936,7 +936,7 @@ def main(argv):
 		plt.ylabel(YLABEL)
 		plt.draw()
 
-		plt.savefig(CONFIGVARSfmtOutFileAll % (index-FRAMEMIN))
+		plt.savefig(CONFIGVARSfmtOutFileAll % (index))
 
 
 		#print 'XY = ', XY_loc, ', frame = ', frames[index]
@@ -946,9 +946,10 @@ def main(argv):
 		###############################
 
 		# output to CSV
-
+		
 		# only output CSV on first rendering of plot
-		if (index-FRAMEMIN==0):
+
+		if (index==0):
 			fnameCSV = pklfiletrim + '_xy' + str(XY_loc) + '_c' + str(ctarget) + '.csv'
 
 			x = np.array(data_x)
@@ -1101,6 +1102,7 @@ def main(argv):
 			for index in range(len(statNP['frame'])):
 				if ((FRAMEMIN<0) or (FRAMEMAX<0)) or ((index>=FRAMEMIN) and (index<=FRAMEMAX)):
 					renderImage(statNP, statNP_ref, XY_loc, index, FRAMEMIN,TOWRITE)
+					
 			
 			ARG = 'avconv -y -framerate 10 -i ' + CONFIGVARSfmtOutFileAll + ' -c:v libx264 -pix_fmt yuv420p ' + pklfiletrim + ('_xy%d.mp4' % XY_loc)
 			print 'running command: ' + ARG
@@ -1109,9 +1111,9 @@ def main(argv):
 		###################
 		###################
 
-		if (bRenderROIPlotVideo == False):
+		if (bRenderROIPlotVideo == True):
+			#pdb.set_trace()
 			for ctarget in CTARGETS:
-
 				os.system('rm ' + CONFIGVARSfmtOutDIR + '*.png')
 
 				#############
@@ -1144,8 +1146,7 @@ def main(argv):
 				for index in range(len(statNP['frame'])):
 					if ((FRAMEMIN<0) or (FRAMEMAX<0)) or ((index>=FRAMEMIN) and (index<=FRAMEMAX)):
 						renderPlot(statNP, statNP_all, XY_loc, index, ctarget, YLABEL, filterData, YLIM, pklfiletrim, FRAMEMIN)
-
-
+				
 				ARG = 'avconv -y -framerate 10 -i ' + CONFIGVARSfmtOutFileAll + ' -c:v libx264 -pix_fmt yuv420p ' + pklfiletrim + ('_xy%d_%d.mp4' % (XY_loc,ctarget))
 				print 'running command: ' + ARG
 				os.system(ARG)
@@ -1298,16 +1299,16 @@ if __name__ == "__main__":
 		#last frame of images
 		FRAMEMAX = 467
 		#first frame with fluorescence image
-		FLINITIAL = 448
+		FLINITIAL = 449
 		#frequency of fluorescence images (i.e. every nth frame)
-		FLSKIP = 1
+		FLSKIP = 10
 		#time between frames in minutes
 		Ftime = 0.5 #min
 		#number of fluorescence channels
-		FLChannels = 0
+		FLChannels = 1
 
 		#labels for fluorescence channels (must be strings)
-		FLLABELS = []
+		FLLABELS = ['GFP']
 		
 		#csv file containing ROI to analyze and/or crop to; if no file set to None
 		ROIFILE = None

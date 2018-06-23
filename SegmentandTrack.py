@@ -94,18 +94,25 @@ else:
 b_ANALYZE = bool_input('Do you wish to analyze images (needed to get whole image fluorescence or render videos)? (Y/N): ')
 
 #only ask to render videos if analysis file will be available
-if not b_ANALYZE:
-	if os.path.isfile('data_' + AlignDir + '.pkl'):
-		b_RENDER = bool_input('Do you wish to render videos? (Y/N): ')
-else:
+if b_ANALYZE:
 	b_RENDER = bool_input('Do you wish to render videos? (Y/N): ')
 
-if b_ALIGN or b_Segment or b_track or b_ANALYZE or b_RENDER:
-	WorkDir = os.getcwd()
-	print 'current working directory is ', WorkDir
-	ImageDir = getdirname('Enter the name of the image directory, relative to the working directory (e.g. Practice): ')
+WorkDir = os.getcwd()
+print 'current working directory is ', WorkDir
+ImageDir = getdirname('Enter the name of the image directory, relative to the working directory (e.g. Practice): ')
 
+
+if not b_ANALYZE:
+	if os.path.isfile('data_' + ImageDir + '.pkl'):
+		b_RENDER = bool_input('Do you wish to render videos? (Y/N): ')
+	else:
+		b_RENDER = False
+	
+
+if b_ALIGN or b_Segment or b_track or b_ANALYZE or b_RENDER:
 	FIRSTFRAME = int_input('Enter the number of the first frame in dataset (e.g. 448): ')
+
+
 
 if b_Segment or b_track:
 	FRAMEMAX = int_input('Enter the number of the last frame in dataset (e.g. 467): ')
