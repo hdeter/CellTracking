@@ -122,15 +122,16 @@ def batchsegment(argv):
 	#check number of files in output directory until processes are complete
 	i = 0
 	CURSOR_UP_ONE = '\x1b[1A'
-	imgfiles = glob.glob(imgdir + '/' + fimageInFmt + '*')
+	#imgfiles = glob.glob(imgdir + '/' + fimageInFmt + '*')
+	imgfiles = FRAMEMAX + 1 - FRAMEMIN
 	while PROCESS:
 		i += 1
 		time.sleep(1)
 		maskfiles = os.listdir(segdir)
-		if len(maskfiles) == len(imgfiles):
+		if len(maskfiles) == imgfiles:
 			PROCESS = False
 		else:
-			images = len(imgfiles) - len(maskfiles)
+			images = imgfiles - len(maskfiles)
 			if i % 2 == 1:
 				print '\\ images remaining: %d                 ' %images
 				sys.stdout.write(CURSOR_UP_ONE) 
