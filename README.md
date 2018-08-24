@@ -1,7 +1,7 @@
 # CellTracking
 Python and ImageJ scripts designed to track single cells, determine cell lineage and analyze fluorescence
 
-Segmentation Tools for Bacteria based on Machine Learning. Version 1.0. March 2018. The purpose of this project is to provide a number of tools for cell-tracking and image analysis. These tools consist of a number of scripts that utilize preexisting open-source software (Fiji ImageJ, Anaconda 2.7, and related packages) included here and available online (https://www.anaconda.com/download/, https://imagej.net/Fiji/Downloads). A detailed method for using these tools will be published in Springer Methods (Deter et al. 2018).
+Segmentation Tools for Bacteria based on Machine Learning. Version 1.0. March 2018. The purpose of this project is to provide a number of tools for cell-tracking and image analysis. These tools consist of a number of scripts that utilize preexisting open-source software (Fiji ImageJ, Anaconda 2.7, and related packages) included here and available online (https://www.anaconda.com/download/, https://imagej.net/Fiji/Downloads). A detailed method for using these tools will be published in Springer Methods (Deter et al. 2018), and a corresponding video tutorial is available on Youtube (https://www.youtube.com/watch?v=wGdIvzBevLM&list=PLL9QX_pyUva9e-Nr0xphPegYg2RJj8OQE).
 
 -----------------------------------------------------------------------------------------------------------------------------
 Software Installation in Ubuntu 16.04 LTS (Linux)
