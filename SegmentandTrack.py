@@ -99,6 +99,8 @@ if b_ANALYZE:
 	#~ b_RENDER = False
 WorkDir = os.getcwd()
 print 'current working directory is ', WorkDir
+print 'Expected fileformat consists of name, 6 digit number, xy, 1 digit number, c, 1 digit number; e.g. name000001xy1c1.tif'
+		
 ImageDir = getdirname('Enter the name of the image directory, relative to the working directory (e.g. Practice): ')
 #~ ImageDir = 'Test'
 
@@ -120,7 +122,7 @@ if b_ALIGN or b_Segment or b_track or b_ANALYZE or b_RENDER:
 	print 'Please enter the number of each XY region'
 	iXY = []
 	for xy in range(nXY):
-		ixy = int_input('XY' + str(xy + 1) + ': ')
+		ixy = int_input('XY: ')
 		iXY.append(ixy)
 		
 #only ask to output lineage csv if tracking pkl will be avaiable
@@ -146,13 +148,13 @@ if b_ALIGN or b_track or b_ANALYZE or b_RENDER:
 	FLSKIP = int_input('Enter the number of frames between fluorescence images (i.e. every nth image; for no fluorescence enter 0): ')	
 	#~ FLSKIP = 6
 	if FLINITIAL != 0:
-		iC = int_input('Enter the number of fluorescenc channels you wish to analyze: ')
+		iC = int_input('Enter the number of fluorescence channels you wish to analyze: ')
 		#~ iC = 3
 		#~ FLChannels = [2,3,4]
 		FLChannels = []
-		print 'Please enter the number of each XY region'
+		print 'Please enter the number of each fluorescence channel (e.g. 2)'
 		for ic in range(iC):
-			icc = int_input('c' + str(ic + 1) + ': ')
+			icc = int_input('c: ')
 			FLChannels.append(icc)
 	else:
 		iC = 0
@@ -183,8 +185,8 @@ else:
 if b_ANALYZE or b_track or b_RENDER:
 	FLLABELS = []
 	#~ FLLABELS = ['YFP','CFP','mCherry']
-	for i in range(FLChannels):
-		label = text_input('Enter the name of fluorescence channel ' + str(i+1) +' (e.g. GFP): ')
+	for i in FLChannels:
+		label = text_input('Enter the name of c' + str(i) +' (e.g. YFP): ')
 		FLLABELS.append(label)
 
 if b_ALIGN:
@@ -338,7 +340,7 @@ if b_ANALYZE or b_RENDER:
 if b_track:
 	TrackARG = []
 	for ixy in iXY:
-		TrackARG.append([AlignDir, fname, Mask2Dir, LineageDir, FIRSTFRAME, FRAMEMAX, AREAMIN, AREAMAX,FLLABELS, Ftime, FLSKIP, FLINITIAL,MINTRAJLENGTH,ixy,FLChannels,CORES])
+		TrackARG.append([AlignDir, fname, Mask2Dir, LineageDir, FIRSTFRAME, FRAMEMAX, AREAMIN, AREAMAX,FLLABELS, Ftime, FLSKIP, FLINITIAL,MINTRAJLENGTH,ixy,FLChannels,None])
 	
 	if CORES == None:
 		CORES = int_input('Enter how many processes are available to use for multiprocessing; set to 1 for no multiprocessing: ')
@@ -364,8 +366,11 @@ if LANALYZE:
 	
 if b_ANALYZE or b_RENDER:
 	if Writelineagetext:
-		WRITETEXT = os.path.isfile('lineagetext.pkl')
-		if not WRITETEXT:
+		b_tracked = False
+		for ixy in iXY:
+			if b_tracked == False:
+				b_tracked = os.path.isfile('iXY' + str(ixy) + '_lineagetracking.pkl')
+		if not b_tracked:
 			print 'Cannot find lineagetext.pkl to use for writing text.'
 			Writelineagetext = False
 			

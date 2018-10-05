@@ -1027,7 +1027,7 @@ def main(argv):
 	# the main function
 
 	def renderResults(argv):
-
+		
 		# file containing results
 		pklfile = argv[0]
 		pklfiletrim = pklfile.replace('.pkl', '')
@@ -1038,6 +1038,8 @@ def main(argv):
 		# xy position that sets color
 		XY_loc_ref = int(argv[3])
 
+		frameskip = int(argv[6])
+		
 		# abort early if current region is not in XY render
 		if not XY_loc in XYRENDER:
 			print 'NOT RENDERING XY%d' % XY_loc
@@ -1177,7 +1179,7 @@ def main(argv):
 
 				# only render if parameters are correct
 				if Writelineagetext:
-					print 'processing lineage data for graphs\nexcluding trajectoris shorter than ' + str(len(statNP['frame'])*0.5*FLSKIP)
+					print 'processing lineage data for graphs\nexcluding trajectoris shorter than ' + str(len(statNP['frame'])*0.5*frameskip)
 					with open(Lineagedatafile[XY_loc], 'rb') as f:
 						TRAJS = pickle.load(f)
 						
@@ -1186,7 +1188,7 @@ def main(argv):
 					for traj in TRAJS:
 						trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime = traj
 						#~ print trajname
-						if len(frame)> (len(statNP['frame'])*0.5*FLSKIP):
+						if len(frame)> (len(statNP['frame'])*0.5*frameskip):
 							fl0 = np.array(fl0, dtype = np.float)[:,ctarget-2]
 							time = np.array(time, dtype = np.float)
 							mask = np.isfinite(fl0)
@@ -1195,14 +1197,17 @@ def main(argv):
 					
 					with open(Celldatafile[XY_loc], 'rb') as f:
 						fltimeALL,fln,FLMEANALL,FLMEDIANALL,FLSTDALL,FLMEANALLFILTERED,FLMEANALLBACKGROUND = pickle.load(f)
-
+					
+					FLMEDIANALL = filterData(FLMEDIANALL[ctarget-2])
 							
 				else:
 					TRAJ = None
+					fltimeAll = None
+					FLMEDIANALL = None
 
 				for index in range(len(statNP['frame'])):
 					if ((FRAMEMIN<0) or (FRAMEMAX<0)) or ((index>=FRAMEMIN) and (index<=FRAMEMAX)):
-						renderPlot(statNP, statNP_all, XY_loc, index, ctarget, YLABEL, filterData, YLIM, pklfiletrim, FRAMEMIN,TRAJ,fltimeALL, filterData(FLMEDIANALL[ctarget-2]))
+						renderPlot(statNP, statNP_all, XY_loc, index, ctarget, YLABEL, filterData, YLIM, pklfiletrim, FRAMEMIN,TRAJ,fltimeALL, FLMEDIANALL)
 				
 				ARG = 'avconv -y -framerate 10 -i ' + CONFIGVARSfmtOutFileAll + ' -c:v libx264 -pix_fmt yuv420p ' + pklfiletrim + ('_xy%d_%d.mp4' % (XY_loc,ctarget))
 				print 'running command: ' + ARG
@@ -1239,7 +1244,8 @@ def main(argv):
 		# XY location to use for fluorescence scaling (same scaling for each video), e.g. '3'
 		XYREF = argv[2]
 
-
+		frameskip = argv[5]
+		
 		# optional rendering parameters
 		# pass as strings for compatibility
 		FRAMEMIN = '-1'
@@ -1251,7 +1257,7 @@ def main(argv):
 		if (len(argv)>4):
 			# highest frame number (NOT time) to render.  Default is the final frame.
 			FRAMEMAX = argv[4]
-
+		
 		###################
 		###################
 
@@ -1267,7 +1273,7 @@ def main(argv):
 
 		for xyLOC in XYRENDER:
 			XYLOC = str(int(xyLOC))
-			renderResults([PICKLEFILE, CONFIG_MODULE, XYLOC, XYREF, FRAMEMIN, FRAMEMAX])
+			renderResults([PICKLEFILE, CONFIG_MODULE, XYLOC, XYREF, FRAMEMIN, FRAMEMAX,frameskip])
 
 
 	#########################################################################
@@ -1423,7 +1429,7 @@ def main(argv):
 
 
 	ARG_ANALYZE = [EXPT_NAME, str(XYMAX), str(CMAX)]
-	ARG_RENDER = [EXPT_NAME_PKL, CONFIGFILE, str(XYREF),str(FRAMEMIN)]
+	ARG_RENDER = [EXPT_NAME_PKL, CONFIGFILE, str(XYREF),str(FRAMEMIN),str(FRAMEMAX),str(frameSkip)]
 	ARG_STACK = [EXPT_NAME_DATA, XYRENDER, CMAX]
 
 	if (not (ROIFILE is None)):
