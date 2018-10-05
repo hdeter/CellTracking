@@ -95,20 +95,25 @@ def batchsegment(argv):
 	FRAMESKIP =1
 	CORES = argv[10]
 
+	iXY = argv[11]
+
 	if CORES == None:
 		PROCESS = False
 		CORES = 2
-		COMMAND_FMT = IMAGEJ + ' --console ' + BSHSCRIPT + ' %d %d %d ' + Useprobs + ' ' + homedir + ' ' + imgdir + ' ' + segdir + ' ' + classifierfile + ' ' + fimageInFmt + ' ' + ext 
-		cmd = COMMAND_FMT % (FRAMEMIN, FRAMEMAX, FRAMESKIP)
-		os.system(cmd)
+		for ixy in iXY:
+			COMMAND_FMT = IMAGEJ + ' --console ' + BSHSCRIPT + ' %d %d %d ' + Useprobs + ' ' + homedir + ' ' + imgdir + ' ' + segdir + ' ' + classifierfile + ' ' + fimageInFmt + ' ' + ext + ' ' + str(ixy)
+			cmd = COMMAND_FMT % (FRAMEMIN, FRAMEMAX, FRAMESKIP)
+			print cmd
+			os.system(cmd)
 
 	else:
 		PROCESS = True
-		COMMAND_FMT = IMAGEJ + ' --console ' + BSHSCRIPT + ' %d %d %d ' + Useprobs + ' ' + homedir + ' ' + imgdir + ' ' + segdir + ' ' + classifierfile + ' ' + fimageInFmt + ' ' + ext + ' 1> /dev/null 2> /dev/null &'
-		for i in range(CORES-1):
-			cmd = COMMAND_FMT % (FRAMEMIN+i, FRAMEMAX, FRAMESKIP*(CORES-1))
-			os.system(cmd)
-			#print cmd
+		for ixy in iXY:
+			COMMAND_FMT = IMAGEJ + ' --console ' + BSHSCRIPT + ' %d %d %d ' + Useprobs + ' ' + homedir + ' ' + imgdir + ' ' + segdir + ' ' + classifierfile + ' ' + fimageInFmt + ' ' + ext  + ' ' + str(ixy) + ' 1> /dev/null 2> /dev/null &'
+			for i in range(CORES-1):
+				cmd = COMMAND_FMT % (FRAMEMIN+i, FRAMEMAX, FRAMESKIP*(CORES-1))
+				os.system(cmd)
+				#print cmd
 
 	#COMMAND_FMT = '~/media/shared/drive/programs/Fiji.app/ImageJ-linux64 --headless --console single_image_classify_scale_arg.bsh %d %d %d' # 1> /dev/null 2> /dev/null &'
 
@@ -117,13 +122,11 @@ def batchsegment(argv):
 	#number of cores you would like to use
 	
 
-
-
 	#check number of files in output directory until processes are complete
 	i = 0
 	CURSOR_UP_ONE = '\x1b[1A'
 	#imgfiles = glob.glob(imgdir + '/' + fimageInFmt + '*')
-	imgfiles = FRAMEMAX + 1 - FRAMEMIN
+	imgfiles = (FRAMEMAX + 1 - FRAMEMIN) *len(iXY)
 	while PROCESS:
 		i += 1
 		time.sleep(1)
@@ -167,39 +170,41 @@ if __name__ == "__main__":
 			training(WekaARG1)
 		else:
 			#Directory containing the images
-			ImageDir = 'Test2'
+			ImageDir = 'Test/'
 			AlignDir = ImageDir
 			
 			#Image filename preceding channel indication (e.g. 20171212_book)
-			fname = '20171212_book'
+			fname = 't'
 			
 			#first frame of images
-			FIRSTFRAME = 448
+			FIRSTFRAME = 100
 			#last frame of images
-			FRAMEMAX = 467
+			FRAMEMAX = 120
 			
 			#name of Directory to output Masks made relative to image directory
-			Mask1Dir = 'Mask2'
+			Mask1Dir = 'Mask1/'
 			runMask1Dir = AlignDir + '/' + Mask1Dir
 			
 			#classifier file relative to working directory
-			classifierfile1 = 'Aligned/classifier2.model'
+			classifierfile1 = 'classifier.model'
 			#classifierfile1 = getfilename('Enter path to classifier relative to working directory (e.g. Aligned/classifier.model): ')
 			
 			#True if producting probablity masks; False for binary masks
-			Useprobability = False
+			Useprobability = True
 			
-			ext = 'png'
+			ext = 'tif'
 			
-			cores = 21
+			cores = 20
 			
 			
-			if not os.path.isfile(runMask1Dir):
+			iXY = [1]
+
+			if not os.path.isdir(runMask1Dir):
 				os.system('mkdir ' + runMask1Dir)
 			else:
-				os.system('rm ' + runMask1Dir + '/' + fname + '*.' + ext)
+				os.system('rm ' + runMask1Dir + '/' + fname + '*.png')
 
-				WekaARG2 = [IMAGEJ, Useprobability, WorkDir + '/', AlignDir+ '/Mask1/', runMask1Dir + '/', FIRSTFRAME, FRAMEMAX, fname + '-p', ext, classifierfile1, cores] 
+				WekaARG2 = [IMAGEJ, Useprobability, WorkDir + '/', AlignDir , runMask1Dir + '/', FIRSTFRAME, FRAMEMAX, fname, ext, classifierfile1, cores, iXY] 
 				batchsegment(WekaARG2)
 
 			

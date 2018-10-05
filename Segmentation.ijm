@@ -25,8 +25,8 @@ rootDir = rootDir + "/";
 //root filenames to open 
 
 //filename= "Ecoli_GFPtetLAA-p-"
-filename= getString("Filename of image to classify preceding number", "20171212_book-p-");
-
+filename= getString("Filename of image to classify preceding number", "t");
+iXY = getString("XY region you wish to classify", "1");
 
 
 ext = getString("File type of images (e.g. tif, png)", "tif");
@@ -110,24 +110,24 @@ function firstclassify(){
 	///////////////////////////////////
 	///////////////////////////////////
 function runClassify(rootDir,filename,model,data,frame){
-		frame = IJ.pad(frame,3);
-		open(rootDir+filename+frame + ext);
+		frame = IJ.pad(frame,6);
+		open(rootDir+filename+frame + "xy"+iXY + "c1" +ext);
 		classify(model,data); }
 	///////////////////////////////////
 	///////////////////////////////////
 function runfirstClassify(rootDir,filename,frame){
-		frame = IJ.pad(frame,3);
-		print (rootDir+filename+frame + ext);
-		open(rootDir+filename+frame + ext);
+		frame = IJ.pad(frame,6);
+		print(rootDir+filename+frame + "xy"+iXY + "c1" +ext);
+		open(rootDir+filename+frame + "xy"+iXY + "c1" +ext);
 		firstclassify(); }
 
-frame = getNumber("What number image do you wish to train your classifier on?", 448);
+frame = getNumber("What number image do you wish to train your classifier on?", 1);
 if (bFirstImage){
 	runfirstClassify(rootDir,filename,frame);
 	waitForUser("Train and save the classifier (into the image directory) in Weka. When finished close Weka and image (DO NOT save changes to the original image) then press OK below");
 	training = getBoolean("Do you wish to continue training your classifier?");
 	if (training){
-		frame = getNumber("What number image do you wish to train your classifier on?", 448);
+		frame = getNumber("What number image do you wish to train your classifier on?", 1);
 	}
 }
 while (training){
@@ -140,7 +140,8 @@ while (training){
 	waitForUser("Train and save the classifier (into the image directory) in Weka. When finished close Weka and image (DO NOT save changes to the original image) then press OK below");
 	training = getBoolean("Do you wish to continue training your classifier?");
 	if (training){
-		frame = getNumber("What number image do you wish to train your classifier on?", 448);
+		frame = getNumber("What number image do you wish to train your classifier on?", 2);
+		iXY = getString("XY region you wish to classify", iXY);
 	}
 	//runClassify(rootDir2,filename2,frame2,classifierFile2,dataFile2);
 } 

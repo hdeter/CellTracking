@@ -49,7 +49,9 @@ iFRAME = 1;
 //fimageInFmt = "Ecoli_MGW202_test_fullimg-p-%03d.tif";
 fimageInFmt = bsh.args[8];
 ext = bsh.args[9];
-fimageInFmt = fimageInFmt + "-%03d." + ext;
+iXY = bsh.args[10];
+
+fimageInFmt = fimageInFmt + "%06dxy" + iXY + "c1." + ext;
 
 
 //////////////////////////////////////////////////////////////////////
