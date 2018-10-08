@@ -10,6 +10,7 @@ Noted updates for version 3.0:
 4. Videos with moving graphs now show single cell data when cells are numbered in image video.
 5. The pipeline can now stack moving graphs and image videos into a single video.
 
+
 -----------------------------------------------------------------------------------------------------------------------------
 Software Installation in Ubuntu 16.04 LTS (Linux)
 
