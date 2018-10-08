@@ -128,7 +128,7 @@ def text_list():
 		
 #################################################################
 
-def CSVOUT(trajname, frame,time,area,cellXY,celllabels,fl0,divisions,dtime):
+def CSVOUT(trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime,FLLABELS,iXY):
 
 	#calculate doubling time
 	#~ if divisions != None:
@@ -156,13 +156,14 @@ def CSVOUT(trajname, frame,time,area,cellXY,celllabels,fl0,divisions,dtime):
 	#~ if dtimes != None:
 		#~ DTIMES = np.array(dtimes)
 
-	f = open(OUTDIR + '/' + trajname + '.csv' , 'wb')
+	f = open(OUTDIR + '/iXY' + str(iXY) + '-' + trajname + '.csv' , 'wb')
 	f.write('frame,')
 	f.write('time,')
 	f.write('area,')
 	f.write('x position,')
 	f.write('y position,')
-	f.write('fluorescence,')
+	for fllabel in FLLABELS:
+		f.write(fllabel + ',')
 	#~ if dtimes != None:
 		#~ f.write('divisions,')
 	f.write('\n')
@@ -173,7 +174,8 @@ def CSVOUT(trajname, frame,time,area,cellXY,celllabels,fl0,divisions,dtime):
 		f.write(str(AREA[ijk]) + ',')
 		f.write(str(CELLX[ijk]) + ',')
 		f.write(str(CELLY[ijk]) + ',')
-		f.write(str(FL0[ijk]) + ',')
+		for fl0 in FL0[ijk]:
+			f.write(str(fl0) + ',')
 		#~ if dtimes != None:
 			#~ f.write(str(DTIMES[ijk]) + ',')
 		f.write('\n')			
@@ -189,28 +191,35 @@ def CSVOUT(trajname, frame,time,area,cellXY,celllabels,fl0,divisions,dtime):
 ####################################################################
 ####################################################################
 def main(argv):
-	global OUTDIR
+	global OUTDIR, iXY
 	
+	OUTDIR = argv[0]	
+	RUNALL = argv[1]
+	#list of trajectories to get
+	trajnames = argv[2]
+	iXY = argv[3]
+	#dt = argv[3]
+	FLLABELS = argv[4]
+	
+	
+	############################################################################
+	############################################################################
 	#load files
 	try:
 		#~ with open('global-cell-statistics.pkl', 'rb') as f:
 			#~ fltimeALL,fln,FLMEANALL,FLMEDIANALL,FLSTDALL,FLMEANALLFILTERED,FLMEANALLBACKGROUND = pickle.load(f)
 
-		with open('lineagetracking.pkl', 'rb') as f:
+		with open('iXY' + str(iXY) + '_lineagetracking.pkl', 'rb') as f:
 			TRAJ = pickle.load(f)
 
 		#~ with open('lineagetrackingsummary.pkl', 'rb') as f:
 			#~ NAMES,ITIMES,ETIMES,MEANAREA,STDAREA,MEANFL,STDFL = pickle.load(f)
 	except:
-		print 'Could not load file: lineagetracking.pkl n/ Cells must be tracked with TrackCellLineages.py (run through SegmentandTrack.py) before analyzing lineages'
+		print 'Could not load file: '+'iXY' + str(iXY) + '_lineagetracking.pkl /n Cells must be tracked with TrackCellLineages.py (run through SegmentandTrack.py) before analyzing lineages'
 	############################################################################
 	############################################################################
 
-	OUTDIR = argv[0]	
-	RUNALL = argv[1]
-	#list of trajectories to get
-	trajnames = argv[2]
-	#dt = argv[3]
+
 
 	DTRAJ = {}
 	for traj in TRAJ:
@@ -219,7 +228,7 @@ def main(argv):
 			#print trajname
 			DTRAJ[trajname] = frame,time,area,cellXY,celllabels,fl0,divisions,dtime
 		else:
-			CSVOUT(trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime)
+			CSVOUT(trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime,FLLABELS, iXY)
 	#pdb.set_trace()
 	if not RUNALL:
 		for traj in trajnames:
@@ -227,19 +236,20 @@ def main(argv):
 				#print traj
 				frame,time,area,cellXY,celllabels,fl0,divisions,dtime = DTRAJ[traj]
 				#pdb.set_trace()
-				CSVOUT(traj,frame,time,area,cellXY,celllabels,fl0,divisions,dtime)
+				CSVOUT(traj,frame,time,area,cellXY,celllabels,fl0,divisions,dtime,FLLABELS, iXY)
 			except:
 				print traj + ' cannot be found'
 
 ############################################################################
 
-def run():
-	
-	OUTDIR = text_input('Enter the name of the directory to output files into, relative to working directory: ')
+def run(argv):
+	iXY = argv[0]
+	OUTDIR = argv[1]
 	if not os.path.isdir(OUTDIR):
 		os.system('mkdir ' + OUTDIR)
-	RUNALL = bool_input('Do you wish to get data for all of the lineages? (To only analyze select lineages based on lineage name answer no; Y/N): ')
-
+	RUNALL = argv[2]
+	FLLABELS = argv[3]
+	
 	#list of trajectories to get
 	if RUNALL:
 		trajnames = None
@@ -249,7 +259,7 @@ def run():
 	#dt = float_input('What is the time per frame in minutes (e.g. 0.5): ')
 	
 
-	main([OUTDIR,RUNALL,trajnames])
+	main([OUTDIR,RUNALL,trajnames,iXY,FLLABELS])
 
 if __name__ == "__main__":
 	run()

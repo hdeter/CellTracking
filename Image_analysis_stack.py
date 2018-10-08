@@ -47,7 +47,10 @@ def main(argv):
 	#if you want to analyze the files (measure fluorescence) set to True; if not set to False
 	b_ANALYZE = argv[2]
 	print
-
+	
+	#to stack final videos
+	b_STACK = argv[17]
+	
 	#Path to csv file (relatvie to working directory) with the ROI file for analysis as a string (ex: 'ROI_file'); 
 	#if there is no ROI file set to None
 	#ROI file is XY#,BX,BY,W,H in pixels
@@ -70,40 +73,51 @@ def main(argv):
 	if ROICROPFILE == None:
 		CroptoROI = False
 
-	#If you wish to label cells based on lineage tracking set to True
-	Writelineagetext = argv[8]
-	#picklefile with lineage text (output by Track-cell-lineages.py)
-	Lineagetextfile = 'lineagetext.pkl'
-
 	# Set to number of channels, including phase (phase+gfp= 2)
 	CMAX = argv[9] + 1
 
 	#first frame that has fluorescence data
 	FRAMEMIN = argv[10]
+	#max frame to look at
+	FRAMEMAX = argv[16]
 
 	# parameters for images
 	#
 	MaxC = CMAX                               # max number of fluorescence channels in image data
-	AIfmtInFile = argv[11] + '-%s-%03d.tif'       # format string for data
+	AIfmtInFile = argv[11] + '%06dxy%dc%d.tif'       # format string for data
 	imgScale = 1                                 # scale to import images
 
 	#framerate for final video (only includes fluorescence frames). Start with 10
 	FRAMERATE = 10
 
 
-	#parameters for analyzing multiple xy regions; currently set to 1
-
-	#If rendering the files, set to XY region to be used as a reference; if not, set to 1
-	XYREF = 1
-		
-	# Set to the number of XY regions 
-	XYMAX = 1
-	print
+	#parameters for analyzing multiple xy regions
 
 	# Set to a list of XY regions to be rendered 
 	#ex: XYRENDER = [1,2,3,4,5,6,7,8,9]
-	XYRENDER = [1]
-	XYMax = 1                                      # max value of xy position
+	XYRENDER = argv[14]
+	# Set to the number of XY regions, #used for getting ROI in ROI file
+	XYMAX = len(XYRENDER)
+	print
+                               
+
+	#If rendering the files, set to XY region to be used as a reference; if not, set to 1
+	XYREF = argv[15]
+
+	# max value of xy position
+	XYMax = np.max(XYREF)  
+
+	#If you wish to label cells based on lineage tracking set to True
+	Writelineagetext = argv[8]
+	#picklefile with lineage text (output by Track-cell-lineages.py)
+	Lineagetextfile = {}
+	Lineagedatafile = {}
+	Celldatafile = {}
+	for ixy in XYRENDER:
+		Lineagetextfile[ixy] = ('iXY' + str(ixy) + '_lineagetext.pkl')
+		Lineagedatafile[ixy] = ('iXY' + str(ixy) + '_lineagetracking.pkl')
+		Celldatafile[ixy] = ('iXY' + str(ixy) + '_global-cell-statistics.pkl')
+
 
 	#########################################################################
 	########################################################################
@@ -117,7 +131,7 @@ def main(argv):
 	#note that 1 is the phase image and 2-4 are fluorescence channels
 
 	if (b_RENDER):
-		
+
 		CONFIGFILE = 'config_P_Y_C_M'
 
 		########################################
@@ -154,7 +168,7 @@ def main(argv):
 		#(blue, green, red) use range of 0 to 1
 		CONFIGVARSimg_rhoC = dict()
 		CONFIGVARSimg_rhoC[1] = (0.33,0.33,0.33)
-		CONFIGVARSimg_rhoC[2] = (0.0,1.0,0.0)
+		CONFIGVARSimg_rhoC[2] = (0.0,1.0,1.0)
 		CONFIGVARSimg_rhoC[3] = (1.0,0.0,0.0)
 		CONFIGVARSimg_rhoC[4] = (0.0,0.0,1.0)
 
@@ -166,17 +180,17 @@ def main(argv):
 		if CMAX == 0:
 			CONFIGVARSimg_shift[1] = 0.0
 		else:
-			CONFIGVARSimg_shift[1] = -1.0
-		CONFIGVARSimg_shift[2] = 1
-		CONFIGVARSimg_shift[3] = 1
+			CONFIGVARSimg_shift[1] = -1.5
+		CONFIGVARSimg_shift[2] = 0.2
+		CONFIGVARSimg_shift[3] = 0.75
 		CONFIGVARSimg_shift[4] = 0.0
 
-		## used to scale the image values (1.0 means no scaling; 0 excludes given channel)
+		## used to scale the image values (1.0 means no scaling)
 		CONFIGVARSimg_scale = dict()
-		CONFIGVARSimg_scale[1] = 1.0
-		CONFIGVARSimg_scale[2] = 0.015
-		CONFIGVARSimg_scale[3] = 1.0
-		CONFIGVARSimg_scale[4] = 1.0
+		CONFIGVARSimg_scale[1] = 0.2
+		CONFIGVARSimg_scale[2] = 0.6*0.25
+		CONFIGVARSimg_scale[3] = 0.8*0.25
+		CONFIGVARSimg_scale[4] = 0.05*0.0
 
 		########################################
 		########################################
@@ -188,6 +202,7 @@ def main(argv):
 		CONFIGVARSimg_label[1] = 'phase contrast'
 		for i in range(len(FCLABELS)):
 			CONFIGVARSimg_label[i+2] = FCLABELS[i]
+		#pdb.set_trace()
 
 		########################################
 		########################################
@@ -220,6 +235,9 @@ def main(argv):
 		CONFIGVARSYLIM[1] = [-0.2,5.0]
 		CONFIGVARSYLIM[2] = [-5.0,5.0]
 		CONFIGVARSYLIM[3] = [-0.2,1.2]
+		#~ CONFIGVARSYLIM[1] = None
+		#~ CONFIGVARSYLIM[2] = None
+		#~ CONFIGVARSYLIM[3] = None
 
 		########################################
 		########################################
@@ -245,6 +263,9 @@ def main(argv):
 		CONFIGVARSfmtOutDIR = './out/'
 		CONFIGVARSfmtOutFile = 'frame%06d.png'
 		CONFIGVARSfmtOutFileAll = CONFIGVARSfmtOutDIR + CONFIGVARSfmtOutFile
+		
+	else:
+		CONFIGFILE = None
 
 		########################################
 		########################################
@@ -489,22 +510,14 @@ def main(argv):
 			# if there is an error, this indicates the data has reached an end
 			try:
 				for imgC in range(1,MaxC+1):
-					
-					if imgC == 1:
-						imgC = 'p'
-					elif imgC == 2:
-						imgC = 'g'
-					else:
-						imgC = 'r'
 					#print imgC
-					fname1 = AIfmtInFileAll % (imgC, index)
+					fname1 = AIfmtInFileAll % (index,XYLoc,imgC)
 					#print fname1                
 					fnames.append(fname1)
 
 					# load images
 					# transpose image, because it is swapped compared to convection
 					imgs.append(imgLoad(fname1,imgScale).astype(np.double).T)
-					
 			except:
 				break
 
@@ -580,9 +593,10 @@ def main(argv):
 			outFrame = outFrame+1
 			# print outFrame
 
-
 			# iterate to next frame
 			index = index + frameSkip
+			if index > FRAMEMAX:
+				break
 
 			#break
 
@@ -646,7 +660,7 @@ def main(argv):
 
 		# run through a number of XY regions
 		OUTALL = dict()
-		for XYLoc in range(1,XYMax+1):
+		for XYLoc in XYRENDER:
 
 			# if no ROI's, set the ROI's to None
 			# otherwise, simply give the ROI's
@@ -812,13 +826,13 @@ def main(argv):
 			#import mask and contour image 
 			fname = fname.replace(EXPT_NAME, MaskDirectory)
 			fname = fname.replace('.tif','.png')
-			#print fname
+			print fname
 			mask = imgLoad(fname,1.0)
 			IMG = contouredimg(IMG,mask)
 		
 		if Writelineagetext:
 			try:
-				for line in TOWRITE[FRAMEMIN+(index*frameSkip)]:
+				for line in TOWRITE[XY_loc][FRAMEMIN+(index*frameSkip)]:
 					XY = line[1]
 					newtrajnum = line[0]
 					cv.putText(IMG, newtrajnum, XY, cv.FONT_HERSHEY_DUPLEX, .3, (0,0,0), 1)
@@ -835,6 +849,7 @@ def main(argv):
 		
 		
 		# add text
+		#cv.putText(IMG, ('XY%d, ' % XY_loc) + ('time = %0.01f min.' % (timePerFrame*(frames[index]-1))), (25,25), cv.FONT_HERSHEY_DUPLEX, 1.0, (1,1,1), 1)
 		#cv.putText(IMG, ('XY%d, ' % XY_loc) + ('time = %0.01f min.' % (timePerFrame*(frames[index]-1))), (25,25), cv.FONT_HERSHEY_DUPLEX, 1.0, (1,1,1), 1)
 		cv.putText(IMG, ('time = %0.01f min.' % (timePerFrame*(frames[index]-1))), (25,25), cv.FONT_HERSHEY_DUPLEX, 1.0, (1,1,1), 1)
 
@@ -863,8 +878,7 @@ def main(argv):
 
 
 	# renders a single plot from various channel data (ctarget)
-	def renderPlot(statNP1, statNP_all, XY_loc, index, ctarget, YLABEL, filterData, YLIM, pklfiletrim, FRAMEMIN):
-
+	def renderPlot(statNP1, statNP_all, XY_loc, index, ctarget, YLABEL, filterData, YLIM, pklfiletrim, FRAMEMIN, TRAJ, fltimeALL,FLMEDIANALL):
 		# change FRAMEMIN if not a positive number
 		# FRAMEMIN being negative is a flag
 		# could be buggy if used as a negative number in this code
@@ -904,25 +918,38 @@ def main(argv):
 
 
 			SZ = data_y.shape
-
+			
 			tcenter = timePerFrame*(frames[index]-1.0)
 			plt.plot(np.array([0.0,0.0])+tcenter,[-10000,10000], 'r', linewidth=1)
+			
+
 			for targ in range(1,SZ[1]):
-
 				dataALLPlotted_orig.append(1.0*data_y[:,targ])
-				data = filterData(data_y[:,targ])
+				if TRAJ == None or index == 0:
+					data = filterData(data_y[:,targ])
 
-				if (not data is None):
+					if (not data is None):
 
-					dataALLPlotted.append(data)
-					plt.plot(data_x, data, '-', color='gray')
+						dataALLPlotted.append(data)
+						plt.plot(data_x, data, '-', color='gray')
+						#plt.show()
+					
+		if TRAJ != None:
+			for traj in TRAJ:
+				plt.plot(TRAJ[traj][0],TRAJ[traj][1], 'k--', linewidth = 0.5)
+			
+			plt.plot(fltimeALL, FLMEDIANALL, 'r-',linewidth = 2)
 
-		dataALLPlotted = np.array(dataALLPlotted)
-		#print 'shape = ', dataALLPlotted.shape
+					
+		else:
+			dataALLPlotted = np.array(dataALLPlotted)
+			#print 'shape = ', dataALLPlotted.shape
 
-		#plt.plot(data_x, np.mean(dataALLPlotted, axis=0), 'b--', linewidth=2)
-		plt.plot(data_x, np.median(dataALLPlotted, axis=0), 'r-', linewidth=2)
-		#pdb.set_trace()
+			#plt.plot(data_x, np.mean(dataALLPlotted, axis=0), 'b--', linewidth=2)
+			plt.plot(data_x, np.median(dataALLPlotted, axis=0), 'r-', linewidth=2)
+			#pdb.set_trace()
+		
+
 		
 		##############################
 		
@@ -935,8 +962,11 @@ def main(argv):
 		plt.xlabel(CONFIGVARSTIMELABEL)
 		plt.ylabel(YLABEL)
 		plt.draw()
+		
 
 		plt.savefig(CONFIGVARSfmtOutFileAll % (index))
+		
+		#pdb.set_trace()
 
 
 		#print 'XY = ', XY_loc, ', frame = ', frames[index]
@@ -997,7 +1027,7 @@ def main(argv):
 	# the main function
 
 	def renderResults(argv):
-
+		
 		# file containing results
 		pklfile = argv[0]
 		pklfiletrim = pklfile.replace('.pkl', '')
@@ -1008,6 +1038,8 @@ def main(argv):
 		# xy position that sets color
 		XY_loc_ref = int(argv[3])
 
+		frameskip = int(argv[6])
+		
 		# abort early if current region is not in XY render
 		if not XY_loc in XYRENDER:
 			print 'NOT RENDERING XY%d' % XY_loc
@@ -1091,8 +1123,10 @@ def main(argv):
 		###################
 		##################
 		if Writelineagetext:
-			with open(Lineagetextfile, 'rb') as f:
-				TOWRITE = pickle.load(f)
+			TOWRITE = {}
+			for ixy in XYRENDER:
+				with open(Lineagetextfile[ixy], 'rb') as f:
+					TOWRITE[ixy] = pickle.load(f)
 		else:
 			TOWRITE = None
 			
@@ -1112,6 +1146,8 @@ def main(argv):
 		###################
 
 		if (bRenderROIPlotVideo == True):
+
+				
 			#pdb.set_trace()
 			for ctarget in CTARGETS:
 				os.system('rm ' + CONFIGVARSfmtOutDIR + '*.png')
@@ -1141,19 +1177,42 @@ def main(argv):
 				#############
 				#############
 
-
 				# only render if parameters are correct
+				if Writelineagetext:
+					print 'processing lineage data for graphs\nexcluding trajectoris shorter than ' + str(len(statNP['frame'])*0.5*frameskip)
+					with open(Lineagedatafile[XY_loc], 'rb') as f:
+						TRAJS = pickle.load(f)
+						
+					#go through and get info from trajectories
+					TRAJ = {}
+					for traj in TRAJS:
+						trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime = traj
+						#~ print trajname
+						if len(frame)> (len(statNP['frame'])*0.5*frameskip):
+							fl0 = np.array(fl0, dtype = np.float)[:,ctarget-2]
+							time = np.array(time, dtype = np.float)
+							mask = np.isfinite(fl0)
+							TRAJ[trajname] = [time[mask],filterData(fl0[mask])]
+					print 'processing complete'
+					
+					with open(Celldatafile[XY_loc], 'rb') as f:
+						fltimeALL,fln,FLMEANALL,FLMEDIANALL,FLSTDALL,FLMEANALLFILTERED,FLMEANALLBACKGROUND = pickle.load(f)
+					
+					FLMEDIANALL = filterData(FLMEDIANALL[ctarget-2])
+							
+				else:
+					TRAJ = None
+					fltimeAll = None
+					FLMEDIANALL = None
+
 				for index in range(len(statNP['frame'])):
 					if ((FRAMEMIN<0) or (FRAMEMAX<0)) or ((index>=FRAMEMIN) and (index<=FRAMEMAX)):
-						renderPlot(statNP, statNP_all, XY_loc, index, ctarget, YLABEL, filterData, YLIM, pklfiletrim, FRAMEMIN)
+						renderPlot(statNP, statNP_all, XY_loc, index, ctarget, YLABEL, filterData, YLIM, pklfiletrim, FRAMEMIN,TRAJ,fltimeALL, FLMEDIANALL)
 				
 				ARG = 'avconv -y -framerate 10 -i ' + CONFIGVARSfmtOutFileAll + ' -c:v libx264 -pix_fmt yuv420p ' + pklfiletrim + ('_xy%d_%d.mp4' % (XY_loc,ctarget))
 				print 'running command: ' + ARG
 				os.system(ARG)
 
-
-			os.system('mkdir CSV')
-			os.system('mv data*.csv CSV/')
 
 
 		###################
@@ -1185,7 +1244,8 @@ def main(argv):
 		# XY location to use for fluorescence scaling (same scaling for each video), e.g. '3'
 		XYREF = argv[2]
 
-
+		frameskip = argv[5]
+		
 		# optional rendering parameters
 		# pass as strings for compatibility
 		FRAMEMIN = '-1'
@@ -1197,7 +1257,7 @@ def main(argv):
 		if (len(argv)>4):
 			# highest frame number (NOT time) to render.  Default is the final frame.
 			FRAMEMAX = argv[4]
-
+		
 		###################
 		###################
 
@@ -1211,20 +1271,166 @@ def main(argv):
 		###################
 		###################
 
-		for xyLOC in range(int(XYMAX)):
-			XYLOC = str(1+xyLOC)
-			renderResults([PICKLEFILE, CONFIG_MODULE, XYLOC, XYREF, FRAMEMIN, FRAMEMAX])
+		for xyLOC in XYRENDER:
+			XYLOC = str(int(xyLOC))
+			renderResults([PICKLEFILE, CONFIG_MODULE, XYLOC, XYREF, FRAMEMIN, FRAMEMAX,frameskip])
 
 
 	#########################################################################
+	####################################################################
+	#########################################################################
 	########################################################################
+	
+	#makeVideoStack
+
+	def stack_3(ROOT, XYRENDER):
+
+		for i in XYRENDER:
+
+			print 'combining xy%d' % i
+
+			VIDEOROOT_CELL =    ROOT + '_xy' + str(i) + '.mp4'
+			VIDEOROOT_2    =    ROOT + '_xy' + str(i) + '_2.mp4'
+			VIDEOROOT_3    =  ROOT + '_xy' + str(i) + '_3.mp4'
+
+			#print VIDEOROOT_CELL
+			#print VIDEOROOT_2
+			#print VIDEOROOT_3
+
+
+			if (not os.path.exists(VIDEOROOT_CELL)):
+				print 'aborting stacking...'
+			else:
+				# two horizontal stack video
+				# FACTOR=1.345
+				FACTOR=1.35
+				WPIXEL=345
+
+				# PROGRAM = 'ffmpeg'
+				PROGRAM = 'avconv'
+
+				COMMAND = PROGRAM + ' -y -i "$VIDEOROOT_CELL" -vf "pad=iw:"$FACTOR"*ih [top]; movie="$VIDEOROOT_2" [tmp1]; [tmp1] scale="$WPIXEL":-1 [bottom1]; movie="$VIDEOROOT_3" [tmp2]; [tmp2] scale="$WPIXEL":-1 [bottom2]; [top][bottom1] overlay=0:main_h/"$FACTOR" [tmp3]; [tmp3][bottom2] overlay="$WPIXEL":main_h/"$FACTOR"" "$ROOT"_xy"$i"_stacked.mp4'
+
+				COMMAND = COMMAND.replace('$i', str(i))
+				COMMAND = COMMAND.replace('$ROOT', ROOT)
+				COMMAND = COMMAND.replace('$VIDEOROOT_CELL', VIDEOROOT_CELL)
+				COMMAND = COMMAND.replace('$VIDEOROOT_2', VIDEOROOT_2)
+				COMMAND = COMMAND.replace('$VIDEOROOT_3', VIDEOROOT_3)
+				COMMAND = COMMAND.replace('$FACTOR', str(FACTOR))
+				COMMAND = COMMAND.replace('$WPIXEL', str(WPIXEL))
+
+				print COMMAND
+
+				os.system(COMMAND)
+
+				print '----------'
+
+	####################################################################
+	####################################################################
+
+	def stack_4(ROOT, XYRENDER):
+
+		for i in XYRENDER:
+
+			print 'combining xy%d' % i
+
+			VIDEOROOT_CELL  =   ROOT + '_xy' + str(i) + '.mp4'
+			VIDEOROOT_2     =   ROOT + '_xy' + str(i) + '_2.mp4'
+			VIDEOROOT_3     =   ROOT + '_xy' + str(i) + '_3.mp4'
+			VIDEOROOT_4     =   ROOT + '_xy' + str(i) + '_4.mp4'
+
+			print VIDEOROOT_CELL
+			print VIDEOROOT_2
+			print VIDEOROOT_3
+			print VIDEOROOT_4
+
+
+			if (not os.path.exists(VIDEOROOT_CELL)):
+				print 'aborting stacking...'
+			else:
+				# two horizontal stack video
+				# FACTOR=1.345
+				#fix CroptoROI to use width of cropped image
+				if CroptoROI:
+					FACTOR=1.25
+					WPIXEL= 782/3
+				else:
+					FACTOR=1.25
+					WPIXEL=232
+
+
+				# PROGRAM = 'ffmpeg'
+				PROGRAM = 'avconv'
+
+				COMMAND = PROGRAM + ' -y -i "$VIDEOROOT_CELL" -vf "pad=iw:"$FACTOR"*ih [top]; movie="$VIDEOROOT_2" [tmp1]; [tmp1] scale="$WPIXEL":-1 [bottom1]; movie="$VIDEOROOT_3" [tmp2]; [tmp2] scale="$WPIXEL":-1 [bottom2]; movie="$VIDEOROOT_4" [tmp5]; [tmp5] scale="$WPIXEL":-1 [bottom3]; [top][bottom1] overlay=0:main_h/"$FACTOR" [tmp3]; [tmp3][bottom2] overlay="$WPIXEL":main_h/"$FACTOR" [tmp4]; [tmp4][bottom3] overlay=2*"$WPIXEL":main_h/"$FACTOR"" "$ROOT"_xy"$i"_full_stacked.mp4'
+
+				COMMAND = COMMAND.replace('$i', str(i))
+				COMMAND = COMMAND.replace('$ROOT', ROOT)
+				COMMAND = COMMAND.replace('$VIDEOROOT_CELL', VIDEOROOT_CELL)
+				COMMAND = COMMAND.replace('$VIDEOROOT_2', VIDEOROOT_2)
+				COMMAND = COMMAND.replace('$VIDEOROOT_3', VIDEOROOT_3)
+				COMMAND = COMMAND.replace('$VIDEOROOT_4', VIDEOROOT_4)
+				COMMAND = COMMAND.replace('$FACTOR', str(FACTOR))
+				COMMAND = COMMAND.replace('$WPIXEL', str(WPIXEL))
+
+				print COMMAND
+
+				os.system(COMMAND)
+
+				print '----------'
+
+
+	####################################################################
+	####################################################################
+	
+	# the video stack function
+
+	def makeVideoStack(argv):
+		print 'parsing: ', argv
+
+		###################
+		###################
+
+		# import all arguments as strings
+
+		# pickle file to use, e.g. 'data_QEntrain_212p_Run2.pkl'
+		ROOT = argv[0]
+
+		if len(argv) > 1:
+			XYRENDER = argv[1]
+			print XYRENDER
+		else:
+			#assume all nine xy regions are present
+			XYRENDER = range(0,10)
+
+		if len(argv) > 2:
+			CMAX= argv[2]
+		else:
+			CMAX = 4
+		print CMAX
+		###################
+		###################
+		if (CMAX==1):
+			print 'cannot stack less than two channels'
+		elif (CMAX==2):
+			stack_3(ROOT, XYRENDER)
+		elif (CMAX==4):
+			stack_4(ROOT, XYRENDER)
+
+		os.system('mkdir STACKED')
+		os.system('mv *stacked.mp4 STACKED/')
+
+
+
+	####################################################################
+	####################################################################
 	#########################################################################
 	########################################################################
 
 
 	ARG_ANALYZE = [EXPT_NAME, str(XYMAX), str(CMAX)]
-	ARG_RENDER = [EXPT_NAME_PKL, CONFIGFILE, str(XYREF),str(FRAMEMIN)]
-
+	ARG_RENDER = [EXPT_NAME_PKL, CONFIGFILE, str(XYREF),str(FRAMEMIN),str(FRAMEMAX),str(frameSkip)]
+	ARG_STACK = [EXPT_NAME_DATA, XYRENDER, CMAX]
 
 	if (not (ROIFILE is None)):
 		ARG_ANALYZE.append(ROIFILE)
@@ -1236,6 +1442,8 @@ def main(argv):
 		print string.join(ARG_ANALYZE, ' ')
 	if (b_RENDER):
 		print string.join(ARG_RENDER, ' ')
+	if (b_STACK):
+		print ARG_STACK
 
 
 	#########################################################################
@@ -1263,6 +1471,14 @@ def main(argv):
 		print '===================================='
 		print
 		renderAll(ARG_RENDER)
+		
+	if (b_STACK):
+		print
+		print '==================================='
+		print '========= stacking videos ========='
+		print '==================================='
+		print
+		makeVideoStack(ARG_STACK)
 
 	print 'Finished'
 
@@ -1282,45 +1498,51 @@ if __name__ == "__main__":
 		main(sys.argv[1:])
 	else:
 		#True if analyzing whole image (optional: analyze ROI)
-		b_ANALYZE = True
+		b_ANALYZE = False
 		#True if rendering videos (requires b_ANALYZE = True)
 		b_RENDER = True
-
+		#True if stacking videos 
+		b_STACK = True
 		#Directory containing the images
-		ImageDir = 'Aligned'
+		ImageDir = 'Test'
 		AlignDir = ImageDir
 		#get working directory
 		WorkDir = os.getcwd()
 		#Image filename preceding channel indication (e.g. 20171212_book)
-		fname = '20171212_book'
+		fname = 't'
 
 		#first frame of images
-		FIRSTFRAME = 448
+		FIRSTFRAME = 460
 		#last frame of images
-		FRAMEMAX = 467
+		FRAMEMAX = 1494
 		#first frame with fluorescence image
-		FLINITIAL = 449
+		FLINITIAL = 463
 		#frequency of fluorescence images (i.e. every nth frame)
-		FLSKIP = 10
+		FLSKIP = 6
 		#time between frames in minutes
 		Ftime = 0.5 #min
 		#number of fluorescence channels
-		FLChannels = 1
+		iC = 3
 
 		#labels for fluorescence channels (must be strings)
-		FLLABELS = ['GFP']
+		FLLABELS = ['YFP','CFP','mCherry']
 		
 		#csv file containing ROI to analyze and/or crop to; if no file set to None
-		ROIFILE = None
+		ROIFILE = 'ROI.csv'
 		#True if cropping images to ROI
-		CroptoROI = False
+		CroptoROI = True
 		#True if writing lineages to video (requires lineagetracking.pkl)
 		Writelineages = True
 		#True if contouring images (requires Masks)
-		ContourImage = True
+		ContourImage = False
 		#mask directory (relative to image directory) for contouring images (only needed if ContourImage = True)
 		Mask2Dir = 'Mask2'
 		
-	AnalyzeARG = [AlignDir, FLSKIP, b_ANALYZE, ROIFILE, b_RENDER, ContourImage, AlignDir + '/' + Mask2Dir, CroptoROI, Writelineages, FLChannels, FLINITIAL, fname, Ftime, FLLABELS]
+		iXY = [5]
+		xyref = 5
+		
+	AnalyzeARG = [AlignDir, FLSKIP, b_ANALYZE, ROIFILE, b_RENDER, ContourImage, AlignDir + '/' + Mask2Dir, CroptoROI, Writelineages, iC, FLINITIAL, fname, Ftime, FLLABELS, iXY, xyref,FRAMEMAX,b_STACK]
 	main(AnalyzeARG)
+
+
 

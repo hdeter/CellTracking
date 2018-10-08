@@ -1,7 +1,15 @@
 # CellTracking
 Python and ImageJ scripts designed to track single cells, determine cell lineage and analyze fluorescence
 
-Segmentation Tools for Bacteria based on Machine Learning. Version 2.0. March 2018. The purpose of this project is to provide a number of tools for cell-tracking and image analysis. These tools consist of a number of scripts that utilize preexisting open-source software (Fiji ImageJ, Anaconda 2.7, and related packages) included here and available online (https://www.anaconda.com/download/, https://imagej.net/Fiji/Downloads). A detailed method for using these tools will be published in Springer Methods (Deter et al. 2018), and a corresponding video tutorial is available on Youtube (https://www.youtube.com/watch?v=wGdIvzBevLM&list=PLL9QX_pyUva9e-Nr0xphPegYg2RJj8OQE).
+Segmentation Tools for Bacteria based on Machine Learning. Version 3.0. October 2018. The purpose of this project is to provide a number of tools for cell-tracking and image analysis. These tools consist of a number of scripts that utilize preexisting open-source software (Fiji ImageJ, Anaconda 2.7, and related packages) included here and available online (https://www.anaconda.com/download/, https://imagej.net/Fiji/Downloads). A detailed method for using these tools will be published in Springer Methods (Deter et al. 2018), and a video tutorial corresponding to version 2.0 is available on Youtube (https://www.youtube.com/watch?v=wGdIvzBevLM&list=PLL9QX_pyUva9e-Nr0xphPegYg2RJj8OQE).
+
+Noted updates for version 3.0:
+1. Filenames are expected to be in the following format name, 6 digit number, xy, 1 digit number, c, 1 digit number; e.g. name000001xy1c1.tif
+2. The pipeline can now process up to 9 xy regions simultaneously
+3. The pipeline can now process up to 9 fluorescence channels simultaneously
+4. Videos with moving graphs now show single cell data when cells are numbered in image video.
+5. The pipeline can now stack moving graphs and image videos into a single video.
+
 
 -----------------------------------------------------------------------------------------------------------------------------
 Software Installation in Ubuntu 16.04 LTS (Linux)
@@ -51,13 +59,13 @@ TrackCellLineages.py: Called by SegmentandTrack.py. Uses binary (black and white
 
 **Video rendering and whole image analysis**
 
-Image_analysis.py: Called by SegmentandTrack.py.  Analyzes and renders videos for a group of phase and fluorescence images for global (whole image) fluorescence and fluorescence within a region of interest based on a csv file (optional). This data is output in a csv file.
+Image_analysis_stack.py: Called by SegmentandTrack.py.  Analyzes and renders videos for a group of phase and fluorescence images for global (whole image) fluorescence and fluorescence within a region of interest based on a csv file (optional). This data is output in a csv file. Also outputs several videos that can include cells outlined based on masked, cells numbered based on tracking, and moving graphs that show fluorescence over time. The graphs and images can be stacked together if number of fluorscence channels is less than 4. To adjust image sizes in stacked videos change FACTOR and WPIXEL.
 
 
 -----------------------------------------------------------------------------------------------------------------------------
 Practice dataset
 
-A sample dataset in the context of bacterial growth is available to test the scripts, and the complete image dataset (467 frames) is also available on FigShare (http://doi.org/10.17605/OSF.IO/GDXEN.
+A sample dataset in the context of bacterial growth is available to test the scripts upon request.
 
 -----------------------------------------------------------------------------------------------------------------------------
 Contact information:

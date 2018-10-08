@@ -38,19 +38,15 @@ def main(argv):
 
 	# input image directory
 	INDIR = argv[2]
+	
+	#XY region to align
+	iXY = argv[4]
 
 	#all the phase images in the INDIR that contain the given string
-	FILES = glob.glob(INDIR + '/' + argv[3] + '-p*')
+	FILES = glob.glob(INDIR + '/' + argv[3] + '*xy' + str(iXY) + 'c1*')
 
-	#the name of the fluorescence files
-	#currently the script requires the difference between phase images contain -p- and fluorescence contain -g-
-	flname = INDIR + '/' + argv[3] + '-g-%03d.tif'
-
-	#change the following based on your imageset
-	#first frame with fluorescence data
-	FLINITIAL = argv[4]
-	#frames between fluorescecne images (every nth frame)
-	FLSKIP = argv[5]
+	#get flchannels
+	FLChannels = argv[5]
 	 
 	CROPIMAGE = True
 
@@ -64,13 +60,8 @@ def main(argv):
 
 	#gets the number of files
 	NFILES = len(FILES)
-	#the following is so that fluorescence images are shifted as well
-	FLFILES = []
-	#loop parameters should be for every nth image that is shifted
-	if FLINITIAL != 0:
-		for flfile in range (FLINITIAL,NFILES+FLINITIAL,FLSKIP):
-			flnamed = flname % flfile
-			FLFILES.append(flnamed)
+	#print '/' + argv[3] + '*xy' + str(iXY) + 'c1*'
+
 	#######################################################################
 	#######################################################################
 
@@ -94,17 +85,17 @@ def main(argv):
 	####################################################################
 	####################################################################
 	#make array from ROIFile
+	if ROIFILE != None:
+		#print 'TRYING TO IMPORT ROI:', ROIFILE
+		ROITXT = open(ROIFILE, 'rb').read()
 
-	#print 'TRYING TO IMPORT ROI:', ROIFILE
-	ROITXT = open(ROIFILE, 'rb').read()
+		# trick for newline problems
+		ROITXT = StringIO(ROITXT.replace('\r','\n\r'))
 
-	# trick for newline problems
-	ROITXT = StringIO(ROITXT.replace('\r','\n\r'))
+		ROI = np.loadtxt(ROITXT, delimiter=",",skiprows=1, dtype='int')
+		#print 'IMPORTED ROI\'S'
 
-	ROI = np.loadtxt(ROITXT, delimiter=",",skiprows=1, dtype='int')
-	#print 'IMPORTED ROI\'S'
-
-	ROI = np.reshape(ROI, (-1,5))
+		ROI = np.reshape(ROI, (-1,5))
 
 	#######################################################################
 	#######################################################################
@@ -137,7 +128,7 @@ def main(argv):
 	# perform (effectively) PIV for the final correction
 	def FFTCompare(img1,img2,bDisplay=False):
 		
-		if not ROIFILE == None:
+		if ROIFILE != None:
 			#use ROIs
 			img1 = getROI (img1, ROI)
 			img2 = getROI (img2, ROI)
@@ -291,7 +282,7 @@ def main(argv):
 		i += 1
 		print 'shifting ', fname, '       '
 		sys.stdout.write('\x1b[1A') 
-		
+	
 		#process files
 		img = imgLoad(fname,1.0)
 		df = DIFF[fname]
@@ -303,15 +294,18 @@ def main(argv):
 			img = img[Sdiff[0]:(ishape[0]+Bdiff[0]),Sdiff[1]:(ishape[1]+Bdiff[1])]
 		cv.imwrite(OUTDIR + '/' + fname_stripped, img)
 		#print df
-		gname = fname.replace ('-p-','-g-')
-		if gname in FLFILES:
-			gimg = imgLoad(gname,1.0)
-			gimg = fixImage(gimg,df)
-			if CROPIMAGE:
-				gishape = img.shape
-				gimg = gimg[Sdiff[0]:(ishape[0]+Bdiff[0]),Sdiff[1]:(ishape[1]+Bdiff[1])]
-			gname_stripped = gname.split('/')[-1]
-			cv.imwrite(OUTDIR + '/' + gname_stripped, gimg)
+		for flc in FLChannels:
+			gname = fname.replace ('c1','c' + str(flc))
+			try:
+				gimg = imgLoad(gname,1.0)
+				gimg = fixImage(gimg,df)
+				if CROPIMAGE:
+					gishape = img.shape
+					gimg = gimg[Sdiff[0]:(ishape[0]+Bdiff[0]),Sdiff[1]:(ishape[1]+Bdiff[1])]
+				gname_stripped = gname.split('/')[-1]
+				cv.imwrite(OUTDIR + '/' + gname_stripped, gimg)
+			except:
+				break
 		#pdb.set_trace()
 	print ('\ndone')
 
@@ -332,22 +326,21 @@ if __name__ == "__main__":
 		main(sys.argv[1:])
 	else:
 		#Directory containing the images
-		ImageDir = 'Aligned'
+		ImageDir = 'Testxy1'
 		#Image filename preceding channel indication (e.g. 20171212_book)
-		fname = '20171212_book'
-		
-		#first frame with fluorescence image
-		FLINITIAL = 449
-		#frequency of fluorescence images (i.e. every nth frame)
-		FLSKIP = 10
+		fname = 't'
 		
 		#location of csv file containing stationary area relative to working directory
-		AlignROI = 'Align_roi.csv'
+		AlignROI = None
 		#directory to output aligned images into (relative to working directory)
 		AlignDir = 'Aligned'
 		
+		iXY = 1
 		
-		AlignARG = [AlignROI, AlignDir, ImageDir, fname, FLINITIAL, FLSKIP]
+		FLChannels = [2,3,4]
+		
+		
+		AlignARG = [AlignROI, AlignDir, ImageDir, fname, iXY, FLChannels]
 		main(AlignARG)
 
 			
