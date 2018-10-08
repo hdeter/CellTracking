@@ -11,6 +11,7 @@ Noted updates for version 3.0:
 3. The pipeline can now process up to 9 fluorescence channels simultaneously
 4. Videos with moving graphs now show single cell data when cells are numbered in image video.
 5. The pipeline can now stack moving graphs and image videos into a single video.
+6. Prompts can now be answered in a csv file rather than in the terminal.
 
 
 -----------------------------------------------------------------------------------------------------------------------------
