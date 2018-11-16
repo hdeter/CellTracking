@@ -96,8 +96,9 @@ def batchsegment(argv):
 	CORES = argv[10]
 
 	iXY = argv[11]
-
-	if CORES == None:
+	
+	#make sure number of xy regions won't overload computer
+	if CORES == None or (len(iXY)>=CORES):
 		PROCESS = False
 		CORES = 2
 		for ixy in iXY:
@@ -110,8 +111,8 @@ def batchsegment(argv):
 		PROCESS = True
 		for ixy in iXY:
 			COMMAND_FMT = IMAGEJ + ' --console ' + BSHSCRIPT + ' %d %d %d ' + Useprobs + ' ' + homedir + ' ' + imgdir + ' ' + segdir + ' ' + classifierfile + ' ' + fimageInFmt + ' ' + ext  + ' ' + str(ixy) + ' 1> /dev/null 2> /dev/null &'
-			for i in range(CORES-1):
-				cmd = COMMAND_FMT % (FRAMEMIN+i, FRAMEMAX, FRAMESKIP*(CORES-1))
+			for i in range((CORES-1)/len(iXY)):
+				cmd = COMMAND_FMT % (FRAMEMIN+i, FRAMEMAX, FRAMESKIP*((CORES-1)/len(iXY)))
 				os.system(cmd)
 				#print cmd
 
