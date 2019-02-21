@@ -1,7 +1,7 @@
 # CellTracking
 Python and ImageJ scripts designed to track single cells, determine cell lineage and analyze fluorescence
 
-Segmentation Tools for Bacteria based on Machine Learning. Version 3.0. October 2018. The purpose of this project is to provide a number of tools for cell-tracking and image analysis. These tools consist of a number of scripts that utilize preexisting open-source software (Fiji ImageJ, Anaconda 2.7, and related packages) included here and available online (https://www.anaconda.com/download/, https://imagej.net/Fiji/Downloads). A detailed method for using these tools will be published in Springer Methods (Deter et al. 2018), and a video tutorial corresponding to version 2.0 is available on Youtube (https://www.youtube.com/watch?v=wGdIvzBevLM&list=PLL9QX_pyUva9e-Nr0xphPegYg2RJj8OQE).
+Segmentation Tools for Bacteria based on Machine Learning. Version 3.0. October 2018. The purpose of this project is to provide a number of tools for cell-tracking and image analysis. These tools consist of a number of scripts that utilize preexisting open-source software (Fiji ImageJ, Anaconda 2.7, and related packages) included here and available online (https://www.anaconda.com/download/, https://imagej.net/Fiji/Downloads). A detailed method for using these tools will be published in Springer Methods (Deter et al. 2019), and a video tutorial corresponding to version 2.0 is available on Youtube (https://www.youtube.com/watch?v=wGdIvzBevLM&list=PLL9QX_pyUva9e-Nr0xphPegYg2RJj8OQE). For more information and examples in the context of bacterial growth see osf.io/75avy/.
 
 For version 2.0 see https://github.com/hdeter/CellTracking/releases/tag/v2.0.
 
@@ -68,13 +68,13 @@ Image_analysis_stack.py: Called by SegmentandTrack.py.  Analyzes and renders vid
 -----------------------------------------------------------------------------------------------------------------------------
 Practice dataset
 
-A sample dataset in the context of bacterial growth is available to test the scripts upon request.
+A sample dataset in the context of bacterial growth is available to test the scripts. See osf.io/sq49f/.
 
 -----------------------------------------------------------------------------------------------------------------------------
 Contact information:
 
 Heather S. Deter
-Graduate Assistant
+Graduate Research Assistant
 South Dakota State University
 Email: hdeter2013@gmail.com
 
