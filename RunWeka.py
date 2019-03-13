@@ -36,13 +36,19 @@ def getfilename(prompt):
 ############################################################################
 ############################################################################
 #run when training classifier
+#run when training classifier
 def training(argv):
 	IMAGEJ = argv[0]
 	homedir = argv[1]
 	IJMSCRIPT = 'Segmentation.ijm'
 	IJMSCRIPT = homedir + IJMSCRIPT
 	#run ImageJ macro to train classifier
-	MACRO_FMT = IMAGEJ + ' --console -macro ' + IJMSCRIPT
+	OPEN_FMT = IMAGEJ + ' -port2 1> /dev/null 2> /dev/null &'
+	print OPEN_FMT
+	print 'opening ImageJ'
+	MACRO_FMT = IMAGEJ + ' --console -macro ' + IJMSCRIPT + ' -port2'
+	os.system(OPEN_FMT)
+	time.sleep(5)
 	os.system(MACRO_FMT)
 
 ############################################################################
