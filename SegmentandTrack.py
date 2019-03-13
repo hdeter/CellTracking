@@ -343,13 +343,6 @@ if b_Segment:
 	def training():
 		#argument to use with RunWeka.training
 		WekaARG1 = [IMAGEJ, WorkDir + '/']
-		openFiji = False
-		while not openFiji:
-			print 'Please open an instance of Fiji. '
-			time.sleep(2)
-			openFiji = raw_bool_input('Is there an open instance of Fiji? (Y/N):')
-			if not openFiji:
-				print 'Please open Fiji'
 		RunWeka.training(WekaARG1)
 	
 	ROUND2 = int_input('How many rounds of classification are you running? (1 or 2):')
