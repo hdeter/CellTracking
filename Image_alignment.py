@@ -12,7 +12,7 @@ import cv2 as cv
 from scipy.ndimage.filters import gaussian_filter
 
 
-from StringIO import StringIO
+from io import StringIO
 
 import matplotlib as mpl
 # mpl.use('Agg')  # optimization for faster rendering than Agg (at least, it is supposed to be)
@@ -240,7 +240,7 @@ def main(argv):
 	DIFF = dict()
 	for fname in FILES:
 		diff = FFTCompare(imgLoad(FILES[REFIND],1.0), imgLoad(fname,1.0))
-		print 'calculating shift; ', fname, '           '
+		print('calculating shift; ', fname, '           ')
 		sys.stdout.write('\x1b[1A') 
 		DIFF[fname] = diff
 		if diff[0] > Bdiff[0]:
@@ -280,7 +280,7 @@ def main(argv):
 	for fname in FILES:
 		#print output
 		i += 1
-		print 'shifting ', fname, '       '
+		print('shifting ', fname, '       ')
 		sys.stdout.write('\x1b[1A') 
 	
 		#process files

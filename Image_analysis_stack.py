@@ -14,7 +14,7 @@ from subprocess import call
 from os import remove, path
 import pickle
 
-from StringIO import StringIO
+from io import StringIO
 from matplotlib import pyplot as plt
 import matplotlib as mpl
 
@@ -46,7 +46,7 @@ def main(argv):
 
 	#if you want to analyze the files (measure fluorescence) set to True; if not set to False
 	b_ANALYZE = argv[2]
-	print
+	print()
 	
 	#to stack final videos
 	b_STACK = argv[17]
@@ -59,7 +59,7 @@ def main(argv):
 
 	#If you want to render images set to True; if not set to False
 	b_RENDER = argv[4]
-	print
+	print()
 
 	#If you have masks and want to contour the image set ContourImage to True
 	ContourImage = argv[5]
@@ -98,7 +98,7 @@ def main(argv):
 	XYRENDER = argv[14]
 	# Set to the number of XY regions, #used for getting ROI in ROI file
 	XYMAX = len(XYRENDER)
-	print
+	print()
                                
 
 	#If rendering the files, set to XY region to be used as a reference; if not, set to 1
@@ -415,7 +415,7 @@ def main(argv):
 
 
 		# turn results into np arrays (for certain data)
-		for key in img_mean.keys():
+		for key in list(img_mean.keys()):
 			img_mean[key] = np.array(img_mean[key])
 			img_std[key] = np.array(img_std[key])
 			img_median[key] = np.array(img_median[key])
@@ -612,7 +612,7 @@ def main(argv):
 
 	def analyzeImagesROI(argv):
 		#global AIfmtInFile, XYMax, MaxC
-		print 'parsing: ', argv	
+		print('parsing: ', argv)	
 
 		###################
 		###################
@@ -626,10 +626,10 @@ def main(argv):
 		# max number of C channels in image data
 		MaxC = int(argv[2])
 
-		print 'DIR: ' + DIR
-		print 'XYMax: ' + str(XYMax)
-		print 'MaxC: ' + str(MaxC)
-		print 'FORMAT STRING: ' + AIfmtInFile
+		print('DIR: ' + DIR)
+		print('XYMax: ' + str(XYMax))
+		print('MaxC: ' + str(MaxC))
+		print('FORMAT STRING: ' + AIfmtInFile)
 
 		###################
 		###################
@@ -639,14 +639,10 @@ def main(argv):
 			# load file containing ROI's to check
 			try:
 				ROIFILE = argv[3]
-				print 'TRYING TO IMPORT ROI:', ROIFILE
-				ROITXT = open(ROIFILE, 'rb').read()
-
-				# trick for newline problems
-				ROITXT = StringIO(ROITXT.replace('\r','\n\r'))
-
-				ROI = np.loadtxt(ROITXT, delimiter=",",skiprows=1, dtype='int')
-				print 'IMPORTED ROI\'S'
+				print('TRYING TO IMPORT ROI:', ROIFILE)
+				
+				ROI = np.loadtxt(ROIFILE, delimiter=",",skiprows=1, dtype='int')
+				print('IMPORTED ROI\'S')
 			except:
 				ROI = None
 		else:
@@ -677,7 +673,7 @@ def main(argv):
 				ROI_xy = ROI[ROI_xy_inds,:]
 				# get rid of xy data
 				ROI_xy = ROI_xy[:,1:]
-				print ROI_xy
+				print(ROI_xy)
 
 			# get measurement results for a particular directory and XY position
 			RES = measureImagesXY(DIR, XYLoc, ROI_xy)
@@ -716,13 +712,8 @@ def main(argv):
 	#function to crop image based on ROI file
 
 	def ROIcrop(img, ROICROPFILE, XYLoc):
-		#import ROI file
-		ROITXT = open(ROICROPFILE, 'rb').read()
 
-		# trick for newline problems
-		ROITXT = StringIO(ROITXT.replace('\r','\n\r'))
-
-		ROI = np.loadtxt(ROITXT, delimiter=",",skiprows=1, dtype='int')
+		ROI = np.loadtxt(ROICROPFILE, delimiter=",",skiprows=1, dtype='int')
 		#print 'IMPORTED ROI\'S'
 		################################
 		# make a variable for the size of the image
@@ -763,6 +754,7 @@ def main(argv):
 
 	# renders a single image from various channel images
 	def renderImage(statNP, statNP_ref, XY_loc, index, FRAMEMIN,TOWRITE):
+		#~ print('Rendering image')
 
 		# change FRAMEMIN if not a positive number
 		# FRAMEMIN being negative is a flag
@@ -780,13 +772,13 @@ def main(argv):
 		frames = statNP['frame']
 
 		# get the keys (channel numbers) from the results
-		keys = fnamesALL.keys()
+		keys = list(fnamesALL.keys())
 
 		# statistics on various channels
 		img_mean = statNP_ref['mean_median']
 		img_min = statNP_ref['mean_min']
 		img_std = dict()
-		for key in img_mean.keys():
+		for key in list(img_mean.keys()):
 			img_std[key] = statNP_ref['mean_median'][key] - statNP_ref['mean_min'][key]
 
 		# names just for this one image
@@ -826,7 +818,7 @@ def main(argv):
 			#import mask and contour image 
 			fname = fname.replace(EXPT_NAME, MaskDirectory)
 			fname = fname.replace('.tif','.png')
-			print fname
+			#~ print(fname)
 			mask = imgLoad(fname,1.0)
 			IMG = contouredimg(IMG,mask)
 		
@@ -837,7 +829,7 @@ def main(argv):
 					newtrajnum = line[0]
 					cv.putText(IMG, newtrajnum, XY, cv.FONT_HERSHEY_DUPLEX, .3, (0,0,0), 1)
 			except:
-				print 'frame', FRAMEMIN+(index*frameSkip), 'has no lineage text'
+				print('frame', FRAMEMIN+(index*frameSkip), 'has no lineage text')
 				
 		if CroptoROI:
 			#fix this later to work with multiple ROI's
@@ -864,6 +856,7 @@ def main(argv):
 		
 		# write image, finally
 		# need to shift by lowest frame
+		#~ print(CONFIGVARSfmtOutFileAll % (index))
 		if ContourImage:
 			cv.imwrite(CONFIGVARSfmtOutFileAll % (index), IMG)
 		else:
@@ -906,7 +899,7 @@ def main(argv):
 			frames = statNP['frame']
 
 			# get the keys (channel numbers) from the results
-			keys = fnamesALL.keys()
+			keys = list(fnamesALL.keys())
 
 
 			# statistics on various channels
@@ -991,7 +984,7 @@ def main(argv):
 
 			SZy = y1.shape
 
-			f = open(fnameCSV, 'wb')
+			f = open(fnameCSV, 'w')
 			f.write('time (min),')
 			f.write('unfiltered median FL,')
 			f.write('filtered median FL,')
@@ -1042,7 +1035,7 @@ def main(argv):
 		
 		# abort early if current region is not in XY render
 		if not XY_loc in XYRENDER:
-			print 'NOT RENDERING XY%d' % XY_loc
+			print('NOT RENDERING XY%d' % XY_loc)
 			return
 
 
@@ -1056,7 +1049,7 @@ def main(argv):
 			# highest frame number (NOT time) to render.  Default is the final frame.
 			FRAMEMAX = int(argv[5])
 		if not ((FRAMEMIN<0) or (FRAMEMAX<0)):
-			print '!!! PARTIAL RENDERING !!!'
+			print('!!! PARTIAL RENDERING !!!')
 
 			# shift frames to "zero based" frames
 			# first frame is actually zero inside this code
@@ -1112,8 +1105,8 @@ def main(argv):
 		#if CTARGETS is empty check image directories
 		global CTARGETS
 		
-		CTARGETS = statNP_all[0]['mean'].keys()
-		print 'CTARGETS', CTARGETS
+		CTARGETS = list(statNP_all[0]['mean'].keys())
+		print('CTARGETS', CTARGETS)
 		if len(CTARGETS) >= 1:
 			CTARGETS.remove(1)
 
@@ -1134,12 +1127,12 @@ def main(argv):
 			os.system('rm ' + CONFIGVARSfmtOutDIR + '*.png')
 			# only render if parameters are correct
 			for index in range(len(statNP['frame'])):
-				if ((FRAMEMIN<0) or (FRAMEMAX<0)) or ((index>=FRAMEMIN) and (index<=FRAMEMAX)):
+				if ((FRAMEMIN<0) or (FRAMEMAX<0)) or ((index+FRAMEMIN>=FRAMEMIN) and (index+FRAMEMIN<=FRAMEMAX)):
 					renderImage(statNP, statNP_ref, XY_loc, index, FRAMEMIN,TOWRITE)
 					
 			
 			ARG = 'avconv -y -framerate 10 -i ' + CONFIGVARSfmtOutFileAll + ' -c:v libx264 -pix_fmt yuv420p ' + pklfiletrim + ('_xy%d.mp4' % XY_loc)
-			print 'running command: ' + ARG
+			print('running command: ' + ARG)
 			os.system(ARG)
 
 		###################
@@ -1179,7 +1172,7 @@ def main(argv):
 
 				# only render if parameters are correct
 				if Writelineagetext:
-					print 'processing lineage data for graphs\nexcluding trajectoris shorter than ' + str(len(statNP['frame'])*0.5*frameskip)
+					print('processing lineage data for graphs\nexcluding trajectoris shorter than ' + str(len(statNP['frame'])*0.5*frameskip))
 					with open(Lineagedatafile[XY_loc], 'rb') as f:
 						TRAJS = pickle.load(f)
 						
@@ -1193,7 +1186,7 @@ def main(argv):
 							time = np.array(time, dtype = np.float)
 							mask = np.isfinite(fl0)
 							TRAJ[trajname] = [time[mask],filterData(fl0[mask])]
-					print 'processing complete'
+					print('processing complete')
 					
 					with open(Celldatafile[XY_loc], 'rb') as f:
 						fltimeALL,fln,FLMEANALL,FLMEDIANALL,FLSTDALL,FLMEANALLFILTERED,FLMEANALLBACKGROUND = pickle.load(f)
@@ -1206,11 +1199,11 @@ def main(argv):
 					FLMEDIANALL = None
 
 				for index in range(len(statNP['frame'])):
-					if ((FRAMEMIN<0) or (FRAMEMAX<0)) or ((index>=FRAMEMIN) and (index<=FRAMEMAX)):
+					if ((FRAMEMIN<0) or (FRAMEMAX<0)) or ((index+FRAMEMIN>=FRAMEMIN) and (index+FRAMEMIN<=FRAMEMAX)):
 						renderPlot(statNP, statNP_all, XY_loc, index, ctarget, YLABEL, filterData, YLIM, pklfiletrim, FRAMEMIN,TRAJ,fltimeALL, FLMEDIANALL)
 				
 				ARG = 'avconv -y -framerate 10 -i ' + CONFIGVARSfmtOutFileAll + ' -c:v libx264 -pix_fmt yuv420p ' + pklfiletrim + ('_xy%d_%d.mp4' % (XY_loc,ctarget))
-				print 'running command: ' + ARG
+				print('running command: ' + ARG)
 				os.system(ARG)
 
 
@@ -1228,7 +1221,7 @@ def main(argv):
 	#renderAll
 
 	def renderAll(argv):
-		print 'parsing: ', argv
+		print('parsing: ', argv)
 
 		###################
 		###################
@@ -1287,7 +1280,7 @@ def main(argv):
 
 		for i in XYRENDER:
 
-			print 'combining xy%d' % i
+			print('combining xy%d' % i)
 
 			VIDEOROOT_CELL =    ROOT + '_xy' + str(i) + '.mp4'
 			VIDEOROOT_2    =    ROOT + '_xy' + str(i) + '_2.mp4'
@@ -1299,7 +1292,7 @@ def main(argv):
 
 
 			if (not os.path.exists(VIDEOROOT_CELL)):
-				print 'aborting stacking...'
+				print('aborting stacking...')
 			else:
 				# two horizontal stack video
 				# FACTOR=1.345
@@ -1319,11 +1312,11 @@ def main(argv):
 				COMMAND = COMMAND.replace('$FACTOR', str(FACTOR))
 				COMMAND = COMMAND.replace('$WPIXEL', str(WPIXEL))
 
-				print COMMAND
+				print(COMMAND)
 
 				os.system(COMMAND)
 
-				print '----------'
+				print('----------')
 
 	####################################################################
 	####################################################################
@@ -1332,21 +1325,21 @@ def main(argv):
 
 		for i in XYRENDER:
 
-			print 'combining xy%d' % i
+			print('combining xy%d' % i)
 
 			VIDEOROOT_CELL  =   ROOT + '_xy' + str(i) + '.mp4'
 			VIDEOROOT_2     =   ROOT + '_xy' + str(i) + '_2.mp4'
 			VIDEOROOT_3     =   ROOT + '_xy' + str(i) + '_3.mp4'
 			VIDEOROOT_4     =   ROOT + '_xy' + str(i) + '_4.mp4'
 
-			print VIDEOROOT_CELL
-			print VIDEOROOT_2
-			print VIDEOROOT_3
-			print VIDEOROOT_4
+			print(VIDEOROOT_CELL)
+			print(VIDEOROOT_2)
+			print(VIDEOROOT_3)
+			print(VIDEOROOT_4)
 
 
 			if (not os.path.exists(VIDEOROOT_CELL)):
-				print 'aborting stacking...'
+				print('aborting stacking...')
 			else:
 				# two horizontal stack video
 				# FACTOR=1.345
@@ -1373,11 +1366,11 @@ def main(argv):
 				COMMAND = COMMAND.replace('$FACTOR', str(FACTOR))
 				COMMAND = COMMAND.replace('$WPIXEL', str(WPIXEL))
 
-				print COMMAND
+				print(COMMAND)
 
 				os.system(COMMAND)
 
-				print '----------'
+				print('----------')
 
 
 	####################################################################
@@ -1386,7 +1379,7 @@ def main(argv):
 	# the video stack function
 
 	def makeVideoStack(argv):
-		print 'parsing: ', argv
+		print('parsing: ', argv)
 
 		###################
 		###################
@@ -1398,27 +1391,24 @@ def main(argv):
 
 		if len(argv) > 1:
 			XYRENDER = argv[1]
-			print XYRENDER
+			print(XYRENDER)
 		else:
 			#assume all nine xy regions are present
-			XYRENDER = range(0,10)
+			XYRENDER = list(range(0,10))
 
 		if len(argv) > 2:
 			CMAX= argv[2]
 		else:
 			CMAX = 4
-		print CMAX
+		print(CMAX)
 		###################
 		###################
 		if (CMAX==1):
-			print 'cannot stack less than two channels'
+			print('cannot stack less than two channels')
 		elif (CMAX==2):
 			stack_3(ROOT, XYRENDER)
 		elif (CMAX==4):
 			stack_4(ROOT, XYRENDER)
-
-		os.system('mkdir STACKED')
-		os.system('mv *stacked.mp4 STACKED/')
 
 
 
@@ -1435,15 +1425,15 @@ def main(argv):
 	if (not (ROIFILE is None)):
 		ARG_ANALYZE.append(ROIFILE)
 
-	print '... execution will run the following equivalent commands:'
-	print
+	print('... execution will run the following equivalent commands:')
+	print()
 
 	if (b_ANALYZE):
-		print string.join(ARG_ANALYZE, ' ')
+		print(" ".join(ARG_ANALYZE))
 	if (b_RENDER):
-		print string.join(ARG_RENDER, ' ')
+		print(" ".join(ARG_RENDER))
 	if (b_STACK):
-		print ARG_STACK
+		print(ARG_STACK)
 
 
 	#########################################################################
@@ -1457,30 +1447,34 @@ def main(argv):
 
 
 	if (b_ANALYZE):
-		print
-		print '====================================='
-		print '========= analyzing images ========='
-		print '====================================='
-		print
+		print()
+		print('=====================================')
+		print('========= analyzing images =========')
+		print('=====================================')
+		print()
 		analyzeImagesROI(ARG_ANALYZE)
 
 	if (b_RENDER):
-		print
-		print '===================================='
-		print '========= rendering images ========='
-		print '===================================='
-		print
+		print()
+		print('====================================')
+		print('========= rendering images =========')
+		print('====================================')
+		print()
 		renderAll(ARG_RENDER)
 		
 	if (b_STACK):
-		print
-		print '==================================='
-		print '========= stacking videos ========='
-		print '==================================='
-		print
+		print()
+		print('===================================')
+		print('========= stacking videos =========')
+		print('===================================')
+		print()
 		makeVideoStack(ARG_STACK)
+		
+	if(b_RENDER):
+		os.system('mkdir VIDEOS')
+		os.system('mv *.mp4 VIDEOS/')
 
-	print 'Finished'
+	print('Finished')
 
 ####################################################################
 ####################################################################

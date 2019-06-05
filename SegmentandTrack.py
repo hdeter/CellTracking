@@ -4,78 +4,73 @@ import sys
 import os
 import time
 from multiprocessing import Pool
-from StringIO import StringIO
 import numpy as np
 import pdb
+
+#import custom python scripts
+import Image_alignment
+import Image_analysis_stack
+import RunWeka
+import TrackCellLineages
+import Lineage_analysis
 #######################################################################
-#######################################################################
-############################################################################
-############################################################################
+######################################################################
 
-def processCSV(CSVFILE):
-    print 'Processing ' + CSVFILE
-    TXT = open(CSVFILE, 'rb').read()
-
-    # trick for newline problems
-    TXT = StringIO(TXT.replace('\r','\n\r'))
-    TXT2 = TXT
-    #method that removes headers
-    CSV = np.genfromtxt(TXT, delimiter=",",skip_header=1, dtype='str')  
-    rows = CSV.shape[0]
-    
-    print 'process complete'
-    
-    return CSV
-
-############################################################################
-############################################################################
-
+#search and return answer to prompt
+##default is to return second column
 def FindPrompt(Prompt,loc = 1):
 	row = np.where(PROMPTS[:,0] == Prompt)[0]
-	print Prompt, PROMPTS[row,loc][0]
-	return PROMPTS[row,loc][0]
+	try:
+		print(Prompt, PROMPTS[row,loc][0])
+		return PROMPTS[row,loc][0]
+	except:
+		return None
 
 ############################################################################
 ############################################################################
 
 # helper function for input
 def text_input(DISPLAY,loc=1):
+	string = ''
 	if CSVPrompt:
-		return str(FindPrompt(DISPLAY,loc))
-	else:
-		string = ''
-		while (string == ''):
-			string = raw_input(DISPLAY)	
-		return string
+		prompt = FindPrompt(DISPLAY,loc)
+		if not (prompt is None):
+			string = str(prompt)
+	while (string == ''):
+		string = input(DISPLAY)
+	return string
 		
 def raw_text_input(DISPLAY):
 	str = ''
 	while (str == ''):
-		str = raw_input(DISPLAY)	
+		str = input(DISPLAY)	
 	return str
 	
 # helper function for input
 def bool_input(DISPLAY):
+	bValue = None
 	if CSVPrompt:
-		if (FindPrompt(DISPLAY) == 'y' or FindPrompt(DISPLAY) == 'Y'): 
-			return True
-		else: 
-			return False
-	else:
-		bValue = None
-		while (bValue is None):
-			str = raw_input(DISPLAY)
-			if (str=='y' or str=='Y'):
+		prompt = FindPrompt(DISPLAY)
+		if not (prompt is None):
+			if (prompt == 'y' or prompt == 'Y'): 
 				bValue = True
-			elif (str=='n' or str=='N'):
+			else: 
 				bValue = False
-		return bValue
+
+	while (bValue is None):
+		str = input(DISPLAY)
+		if (str=='y' or str=='Y'):
+			bValue = True
+		elif (str=='n' or str=='N'):
+			bValue = False
+			
+	return bValue
 
 # helper function for input
 def raw_bool_input(DISPLAY):
 	bValue = None
 	while (bValue is None):
-		str = raw_input(DISPLAY)
+		str = input(DISPLAY)
 		if (str=='y' or str=='Y'):
 			bValue = True
 		elif (str=='n' or str=='N'):
@@ -84,31 +79,41 @@ def raw_bool_input(DISPLAY):
 
 # helper function for input
 def int_input(DISPLAY, loc = 1):
+	iValue = None
 	if CSVPrompt:
-		return int(FindPrompt(DISPLAY,loc))
-	else:
-		iValue = None
-		while (iValue is None):
-			str = raw_input(DISPLAY)
+		prompt = FindPrompt(DISPLAY,loc)
+		if not (prompt is None):
 			try:
-				iValue = int(str)
+				iValue = int(prompt)
 			except:
 				iValue = None
-		return iValue
+			
+	while (iValue is None):
+		str = input(DISPLAY)
+		try:
+			iValue = int(str)
+		except:
+			iValue = None
+	return iValue
 	
 # helper function for input
 def float_input(DISPLAY):
+	iValue = None
 	if CSVPrompt:
-		return float(FindPrompt(DISPLAY))
-	else:
-		iValue = None
-		while (iValue is None):
-			str = raw_input(DISPLAY)
+		prompt = FindPrompt(DISPLAY)
+		if not (prompt is None):
 			try:
-				iValue = float(str)
+				iValue = float(prompt)
 			except:
 				iValue = None
-		return iValue
+
+	while (iValue is None):
+		str = input(DISPLAY)
+		try:
+			iValue = float(str)
+		except:
+			iValue = None
+	return iValue
 ####################################################################
 ####################################################################
 
@@ -118,14 +123,14 @@ def getfilename(prompt):
 	FILENAME = text_input(prompt)
 	ISFILE = os.path.isfile(FILENAME)
 	if not ISFILE:
-		print 'cannot find file'
+		print('cannot find file')
 	
 	#assume prompt answer was wrong and reprompt question in terminal
 	while not ISFILE:
 		FILENAME = text_input(prompt)
 		ISFILE = os.path.isfile(FILENAME)
 		if not ISFILE:
-			print 'cannot find file'
+			print('cannot find file')
 	return FILENAME
 	
 def getdirname(prompt):
@@ -134,14 +139,14 @@ def getdirname(prompt):
 	PATHNAME = text_input(prompt)
 	ISPATH = os.path.isdir(PATHNAME)
 	if not ISPATH:
-		print 'cannot find directory ' + PATHNAME
+		print('cannot find directory ' + PATHNAME)
 	
 	#assume prompt answers was wrong and reprompt question in terminal
 	while not ISPATH:
 		PATHNAME = raw_text_input(prompt)
 		ISPATH = os.path.isdir(PATHNAME)
 		if not ISPATH:
-			print 'cannot find directory ' + PATHNAME
+			print('cannot find directory ' + PATHNAME)
 	return PATHNAME
 
 #this one just used for prompt file
@@ -151,17 +156,12 @@ def getcsvname(prompt):
 		FILENAME = raw_text_input(prompt)
 		ISFILE = os.path.isfile(FILENAME)
 		if not ISFILE:
-			print 'cannot find file ' + FILENAME
+			print('cannot find file ' + FILENAME)
 	return FILENAME
+####################################################################
+####################################################################
+####################################################################
 
-####################################################################
-####################################################################
-#import custom python scripts
-import Image_alignment
-import Image_analysis_stack
-import RunWeka
-import TrackCellLineages
-import Lineage_analysis
 
 CSVPrompt = False
 
@@ -169,12 +169,11 @@ CSVPrompt = bool_input('Do you have a csv file with prompted answers? (Y/N):')
 #~ print CSVPrompt
 if CSVPrompt:
 	PROMPTCSV = getcsvname('Enter the filename of the csv file containing prompted answers relative to the working directory (e.g. prompts.csv):')
-	PROMPTS = processCSV(PROMPTCSV)
+	PROMPTS = np.genfromtxt(PROMPTCSV, delimiter=",",skip_header=1, dtype='str') 
+	#~ print(PROMPTS.shape)
+####################################################################
+####################################################################
 	
-
-
-
-
 b_ALIGN = bool_input('Do you wish to align images? (Y/N):')
 b_Segment = bool_input('Do you wish to train and/or apply a classifier? (Y/N):')
 b_track = bool_input('Do you wish to track cells? (Y/N):')
@@ -193,8 +192,8 @@ if b_ANALYZE:
 	b_RENDER = bool_input('Do you wish to render videos? (Y/N):')
 	#~ b_RENDER = False
 WorkDir = os.getcwd()
-print 'current working directory is ', WorkDir
-print 'Expected fileformat consists of name, 6 digit number, xy, 1 digit number, c, 1 digit number; e.g. name000001xy1c1.tif'
+print('current working directory is ', WorkDir)
+print('Expected fileformat consists of name, 6 digit number, xy, 1 digit number, c, 1 digit number; e.g. name000001xy1c1.tif')
 		
 ImageDir = getdirname('Enter the name of the image directory relative to the working directory (e.g. Practice):')
 #~ ImageDir = 'Test'
@@ -216,7 +215,7 @@ if b_ALIGN or b_Segment or b_track or b_ANALYZE or b_RENDER:
 	
 nXY = int_input('How many XY regions do you wish to analyze (e.g. 1):')
 if not CSVPrompt:
-	print 'Please enter the number of each XY region'
+	print('Please enter the number of each XY region')
 iXY = []
 for xy in range(nXY):
 	if CSVPrompt:
@@ -253,7 +252,7 @@ if b_ALIGN or b_track or b_ANALYZE or b_RENDER:
 		#~ FLChannels = [2,3,4]
 		FLChannels = []
 		if not CSVPrompt:
-			print 'Please enter the number of each fluorescence channel (e.g. 2)'
+			print('Please enter the number of each fluorescence channel (e.g. 2)')
 		for ic in range(iC):
 			if CSVPrompt:
 				icc = int_input('List the number of each fluorescence channel:',ic+1)
@@ -272,12 +271,12 @@ if b_ALIGN or b_Segment or b_track or b_ANALYZE or b_RENDER:
 		ftest = ImageDir + '/' + fname + '%06dxy%dc%d.tif'
 		FNAME = os.path.isfile(ftest %(FIRSTFRAME,iXY[0],1))
 		if not FNAME:
-			print 'cannot find file: ', ftest %(FIRSTFRAME,iXY[0],1)
+			print('cannot find file: ', ftest %(FIRSTFRAME,iXY[0],1))
 			continue
 		if (b_ALIGN or b_track or b_ANALYZE) and FLINITIAL != 0:
 			FNAME = os.path.isfile(ftest %(FLINITIAL,iXY[0],iC))
 			if not FNAME:
-				print 'cannot find file: ', ftest %(FLINITIAL,iXY[0],iC)
+				print('cannot find file: ', ftest %(FLINITIAL,iXY[0],iC))
 				continue
 				
 	#set this to use later for multiprocessing arguments
@@ -321,14 +320,14 @@ if not b_Segment and (b_track or b_ANALYZE or b_RENDER):
 				Mask2Dir = text_input('Enter the name of the directory containing masks relative to ' + AlignDir + ':')
 			MASKDIR = os.path.isdir(AlignDir + '/' + Mask2Dir)
 			if not MASKDIR:
-				print 'could not find directory'
+				print('could not find directory')
 	else:
 		Mask2Dir = 'None'			
 
 if b_ALIGN:
 	AlignARG = []
 	AlignARG.append([AlignROI, AlignDir, ImageDir, fname, iXY,FLChannels])
-	map(Image_alignment.run,AlignARG)
+	list(map(Image_alignment.run,AlignARG))
 
 
 if b_Segment:
@@ -339,7 +338,7 @@ if b_Segment:
 		IJPATH = os.path.isfile(IMAGEJ)
 		IJEX = os.access(IMAGEJ,os.X_OK)
 		if not IJPATH and IJEX:
-			print 'could not find application'
+			print('could not find application')
 	def training():
 		#argument to use with RunWeka.training
 		WekaARG1 = [IMAGEJ, WorkDir + '/']
@@ -380,7 +379,7 @@ if b_Segment:
 		WekaARG2 = [IMAGEJ, True, WorkDir + '/', AlignDir+ '/', runMask1Dir + '/', FIRSTFRAME, FRAMEMAX, fname, 'tif', classifierfile1, CORES, iXY] 
 		RunWeka.batchsegment(WekaARG2)
 		
-		print 'continuing to second round of classification\n'
+		print('continuing to second round of classification\n')
 	else:
 		runMask1Dir = getdirname('Enter the name of the directory containing images to classify relative to the working directory (e.g. Aligned/Mask1):')
 		
@@ -394,10 +393,9 @@ if b_Segment:
 	classifierfile2 = getfilename('Enter the path to the second classifier relative to the working directory (e.g. Aligned/classifier2.model):')
 	#~ classifierfile2 = 'classifier2.model'
 	if CSVPrompt:
-		Mask2Dir = text_input('Enter the name of the directory containing images to classify relative to the working directory (e.g. Aligned/Mask1):')
+		Mask2Dir = text_input('Enter the name of the directory within image/align directory to output masks into (e.g. Mask2):')
 	else:
 		Mask2Dir = text_input('Enter the name of the directory within ' + AlignDir + ' to output masks into (e.g. Mask2):')
-	#~ Mask2Dir = 'Mask2'
 	runMask2Dir = AlignDir + '/' + Mask2Dir
 	
 	if not os.path.isdir(runMask2Dir):
@@ -423,8 +421,8 @@ if b_track:
 		#~ MINTRAJLENGTH = 40
 		if MINTRAJLENGTH >= FRAMEMAX - FIRSTFRAME - 2:
 			MINTRAJLENGTH = FRAMEMAX - FIRSTFRAME - 2
-			print 'Maximum length is 2 less the total number of frames.'
-			print 'Tracking through at least ', MINTRAJLENGTH, ' frames.'
+			print('Maximum length is 2 less the total number of frames.')
+			print('Tracking through at least ', MINTRAJLENGTH, ' frames.')
 	else:
 		b_track = False
 		print ('Tracking cells requires a mask directory.')
@@ -458,7 +456,7 @@ if b_track:
 		CORES = int_input('Enter how many processes are available to use for multiprocessing; set to 1 for no multiprocessing:')
 		#~ CORES = 21
 	if CORES == 1:
-		map(TrackCellLineages.run,TrackARG)
+		list(map(TrackCellLineages.run,TrackARG))
 	else:
 		pool = Pool(CORES)
 		pool.map(TrackCellLineages.run,TrackARG)
@@ -474,7 +472,7 @@ if LANALYZE:
 	XYlin = []
 	for xy in iXY:
 		XYlin.append([xy,LINOUTDIR,LINRUNALL,FLLABELS])
-	map(Lineage_analysis.run,XYlin)
+	list(map(Lineage_analysis.run,XYlin))
 	
 if b_ANALYZE or b_RENDER:
 	if Writelineagetext:
@@ -483,7 +481,7 @@ if b_ANALYZE or b_RENDER:
 			if b_tracked == False:
 				b_tracked = os.path.isfile('iXY' + str(ixy) + '_lineagetracking.pkl')
 		if not b_tracked:
-			print 'Cannot find lineagetext.pkl to use for writing text.'
+			print('Cannot find lineagetext.pkl to use for writing text.')
 			Writelineagetext = False
 			
 	if len(iXY) > 1:
