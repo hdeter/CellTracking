@@ -142,7 +142,7 @@ def CSVOUT(trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime,FLLABE
 	
 	i = 0
 	for fl in fl0:
-		if fl == None:
+		if fl[0] == None:
 			fl0[i] = 'nan'
 		i +=1
 			
@@ -156,7 +156,7 @@ def CSVOUT(trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime,FLLABE
 	#~ if dtimes != None:
 		#~ DTIMES = np.array(dtimes)
 
-	f = open(OUTDIR + '/iXY' + str(iXY) + '-' + trajname + '.csv' , 'wb')
+	f = open(OUTDIR + '/iXY' + str(iXY) + '-' + trajname + '.csv' , 'w')
 	f.write('frame,')
 	f.write('time,')
 	f.write('area,')
