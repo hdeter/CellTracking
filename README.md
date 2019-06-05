@@ -1,11 +1,11 @@
 # CellTracking
 Python and ImageJ scripts designed to track single cells, determine cell lineage and analyze fluorescence
 
-Segmentation Tools for Bacteria based on Machine Learning. Version 3.0. October 2018. The purpose of this project is to provide a number of tools for cell-tracking and image analysis. These tools consist of a number of scripts that utilize preexisting open-source software (Fiji ImageJ, Anaconda 2.7, and related packages) included here and available online (https://www.anaconda.com/download/, https://imagej.net/Fiji/Downloads). A detailed method for using these tools will be published in Springer Methods (Deter et al. 2019), and a video tutorial corresponding to version 2.0 is available on Youtube (https://www.youtube.com/watch?v=wGdIvzBevLM&list=PLL9QX_pyUva9e-Nr0xphPegYg2RJj8OQE). For more information and examples in the context of bacterial growth see https://osf.io/75avy/.
+Segmentation Tools for Bacteria based on Machine Learning. Version 3.1. June 2019. The purpose of this project is to provide a number of tools for cell-tracking and image analysis. These tools consist of a number of scripts that utilize preexisting open-source software (Fiji ImageJ, Anaconda 3.7, and related packages) included here and available online (https://www.anaconda.com/download/, https://imagej.net/Fiji/Downloads). A detailed method for using these tools will be published in Springer Methods (Deter et al. 2019), and a video tutorial corresponding to version 2.0 is available on Youtube (https://www.youtube.com/watch?v=wGdIvzBevLM&list=PLL9QX_pyUva9e-Nr0xphPegYg2RJj8OQE). For more information and examples in the context of bacterial growth see https://osf.io/75avy/.
 
 For version 2.0 see https://github.com/hdeter/CellTracking/releases/tag/v2.0.
 
-Noted updates for version 3.0:
+Noted updates for version 3.1:
 1. Filenames are expected to be in the following format name, 6 digit number, xy, 1 digit number, c, 1 digit number; e.g. name000001xy1c1.tif
 2. The pipeline can now process up to 9 xy regions simultaneously
 3. The pipeline can now process up to 9 fluorescence channels simultaneously
@@ -17,12 +17,12 @@ Noted updates for version 3.0:
 -----------------------------------------------------------------------------------------------------------------------------
 Software Installation in Ubuntu 16.04 LTS (Linux)
 
-1. Install Anaconda 2.7 (Anaconda2-5.1.0-Linux-x86_64.sh) file using the following commands; replace /path/to/script.sh with 
+1. Install Anaconda 3.7 sh file using the following commands; replace /path/to/script.sh with 
 the path to the file on your computer:
 	sudo chmod +x /path/to/script.sh
 	/path/to/script.sh
 2. Add conda to the PATH: 
-	export PATH=~/anaconda2/bin:$PATH
+	export PATH=~/anaconda3/bin:$PATH
 3. Install OpenCV through Anaconda: 
 	conda install opencv
 4. Install avconv: 
@@ -32,15 +32,15 @@ the path to the file on your computer:
 -----------------------------------------------------------------------------------------------------------------------------
 Software Installation in Mac (OS X)
 
-1. Download and install Anaconda 2.7 (https://www.anaconda.com/download/#macos)
+1. Download and install Anaconda 3.7 (https://www.anaconda.com/download/#macos)
 2. Install OpenCV through Anaconda: 
 conda install opencv
 3. Install avconv: 
 brew install libav
-4. Download and install Fiji ImageJ lifeline version from May 30, 2017 (availabel here: https://imagej.net/Fiji/Downloads)
+4. Download and install Fiji ImageJ (https://imagej.net/Fiji/Downloads)
 
 -----------------------------------------------------------------------------------------------------------------------------
-Description of scripts (all Python scripts are Python 2.7)
+Description of scripts (all Python scripts are Python 3.7)
 
 SegmentandTrack.py: Runs the entire cell segmentation and tracking pipeline (or parts of the pipeline) based on user responses to command prompts. The scripts that are called by SegmentandTrack.py are described below.
 
