@@ -16,7 +16,7 @@ import string
 import sys
 import os
 
-import cPickle as pickle
+import pickle as pickle
 
 from multiprocessing import Pool
 
@@ -26,7 +26,7 @@ import scipy.misc as misc
 import scipy.sparse
 
 import cv2 as cv
-from StringIO import StringIO
+from io import StringIO
 
 from scipy import convolve
 
@@ -232,8 +232,8 @@ def main(argv):
 	# gets center of mass (CoM) and area for each object
 	def getObjectStats(label, nlabels, FLALL, i, iFRAME):
 		# measure center of mass and area
-		comXY = ndimage.center_of_mass(label*0 + 1.0, label, range(nlabels))
-		AREA = ndimage.sum(label*0 + 1.0, label, range(nlabels))
+		comXY = ndimage.center_of_mass(label*0 + 1.0, label, list(range(nlabels)))
+		AREA = ndimage.sum(label*0 + 1.0, label, list(range(nlabels)))
 		
 		# measure mean fluorescence
 		FLMEASURE = []
@@ -241,14 +241,14 @@ def main(argv):
 		if FLINITIAL != 0:
 			if iFRAME in FLFILES:
 				for img in FLALL:
-					flint = ndimage.sum(img, label, range(nlabels))
+					flint = ndimage.sum(img, label, list(range(nlabels)))
 					flmean = flint / AREA
 					FLMEASURE.append(flmean)
 			else:
 				FLMEASURE.append(None)
 			
 		if i == 1:
-			labelsum = ndimage.sum(label, label, range(nlabels))
+			labelsum = ndimage.sum(label, label, list(range(nlabels)))
 			celllabels = labelsum / AREA
 			
 			return (comXY, AREA, celllabels, np.array(FLMEASURE))
@@ -285,7 +285,7 @@ def main(argv):
 		# print i2, SZ, comXY2[:,i2], Xlow, Xhigh,Ylow, Yhigh
 
 		# finally, compute overlap using a simple function
-		overlap = ndimage.sum(label2==i2, label1, range(nlabels1))
+		overlap = ndimage.sum(label2==i2, label1, list(range(nlabels1)))
 		#notzero = np.nonzero(overlap)
 		#print notzero, i2
 
@@ -301,7 +301,7 @@ def main(argv):
 
 
 	def runOnce(iFRAME):
-		print 'Processing frame ', iFRAME, '               '
+		print('Processing frame ', iFRAME, '               ')
 		sys.stdout.write('\x1b[1A') 
 		
 		# make labels from the masks
@@ -313,8 +313,8 @@ def main(argv):
 		comXY2, AREA2, FLMEASURE2 = getObjectStats(label2, nlabels2, FL2ALL, 2, iFRAME+FRAMESKIP)
 		
 		# process center of mass (CoM) arrays
-		comXY1 = np.array(zip(*comXY1))
-		comXY2 = np.array(zip(*comXY2))
+		comXY1 = np.array(list(zip(*comXY1)))
+		comXY2 = np.array(list(zip(*comXY2)))
 		comXY1 = np.nan_to_num(comXY1)
 		comXY2 = np.nan_to_num(comXY2)
 		
@@ -323,7 +323,7 @@ def main(argv):
 		ARGALL = []
 		for i2 in range(nlabels2):
 			ARGALL.append((i2,label1,label2,nlabels1,nlabels2,comXY1,comXY2))
-		DISTMAT = map(getMetricOverlap, ARGALL)
+		DISTMAT = list(map(getMetricOverlap, ARGALL))
 		DISTMAT = np.array(DISTMAT)
 		#print DISTMAT.shape
 		
@@ -434,7 +434,7 @@ def main(argv):
 		MEASUREMENTS = pool.map(runOnce, ARGLIST)
 		pool.close
 	else:
-		MEASUREMENTS = map(runOnce, ARGLIST)
+		MEASUREMENTS = list(map(runOnce, ARGLIST))
 		
 	TRACKING_RESULTS = MEASUREMENTS
 
@@ -457,14 +457,14 @@ def main(argv):
 	
 	
 	# unpack results into handy variables
-	iFRAME, label, nlabels, CELLSTATS, DISTMAT, FLMEASURE = zip(*TRACKING_RESULTS)
+	iFRAME, label, nlabels, CELLSTATS, DISTMAT, FLMEASURE = list(zip(*TRACKING_RESULTS))
 
 	# cell statistics specifically
-	comXY, celllabels1, AREA = zip(*CELLSTATS)
+	comXY, celllabels1, AREA = list(zip(*CELLSTATS))
 
 	# number of fluorescence channels
 	FLN = len(FLMEASURE[0][:,0])
-	print FLN
+	print(FLN)
 
 	#~ ############################################################################
 	#~ ############################################################################
@@ -481,7 +481,7 @@ def main(argv):
 		FLMEDIANALL = []
 
 		# plot mean and std. dev. intensity vs. time across cells
-		print 'Analyzing total cell fluorescence               '
+		print('Analyzing total cell fluorescence               ')
 		for ifl in range(0,FLN):
 			#print 'analyzing fluorescence channel ', ifl + 1, '           '
 			#sys.stdout.write('\x1b[1A') 
@@ -523,7 +523,7 @@ def main(argv):
 		#save data to CSV
 		#need to loop through number of channels
 
-		f = open(cellstatCSV, 'wb')
+		f = open(cellstatCSV, 'w')
 		f.write('time,')
 		f.write('cell count,')
 		for lmn in range(len(FLMEANALL)):
@@ -548,7 +548,7 @@ def main(argv):
 	# begin tracking proper
 
 	# find many trajectories by starting at a multitude of frames
-	FRAMEMAXLIST = range(FRAMEMAX,(FIRSTFRAME+MINTRAJLENGTH),-1)
+	FRAMEMAXLIST = list(range(FRAMEMAX,(FIRSTFRAME+MINTRAJLENGTH),-1))
 	# FRAMEMAXLIST = [FRAMEMAX,FRAMEMAX-30,FRAMEMAX-30*2,FRAMEMAX-30*3,FRAMEMAX-30*4]
 
 	# current number of trajectories
@@ -563,14 +563,14 @@ def main(argv):
 		VISITED.append([])
 
 
-	print 'Tracking cells'
+	print('Tracking cells')
 	# scan through the final frame
 	for FRAMEMAX in FRAMEMAXLIST:
-		print 'framemax ', FRAMEMAX, '              '
+		print('framemax ', FRAMEMAX, '              ')
 		#sys.stdout.write('\x1b[1A') 
 
 		# scan all cell ID's at the final frame
-		cellIDStart = range(nlabels[FRAMEMAX-FIRSTFRAME-1])
+		cellIDStart = list(range(nlabels[FRAMEMAX-FIRSTFRAME-1]))
 
 		# current cell ID
 		cellID = 0
@@ -664,7 +664,7 @@ def main(argv):
 								fl0.append(FLMEASURE[iT][:,cellID])
 
 						except: 
-							print 'no fl data for ' + str(iT+FIRSTFRAME) + '              '
+							print('no fl data for ' + str(iT+FIRSTFRAME) + '              ')
 					else:
 						if FLN > 0:
 							emptyfl = np.empty((FLN,))
@@ -726,11 +726,11 @@ def main(argv):
 
 				#pdb.set_trace()
 				TRAJCOUNT += 1
-				print TRAJCOUNT, ' trajectories', '                  '
+				print(TRAJCOUNT, ' trajectories', '                  ')
 				sys.stdout.write('\x1b[1A') 
 				
 
-	print '\n', TRAJCOUNT, ' total trajectories'
+	print('\n', TRAJCOUNT, ' total trajectories')
 	
 	#~ #pickle file to output when running piecemeal
 	#~ with open('raw_traj.pkl', 'wb') as f:
@@ -776,7 +776,7 @@ def main(argv):
 
 		trajnum= trajnum+1
 
-		print 'Processing trajectory ', trajnum, '           '
+		print('Processing trajectory ', trajnum, '           ')
 		sys.stdout.write('\x1b[1A') 
 		
 		#eachtraj represents each frame a trajectory is in
@@ -785,7 +785,7 @@ def main(argv):
 			label = celllabels[eachtraj]
 			
 			if len(label) > 900000:
-				print 'Skipping traj ', trajnum, 'label is too large              '
+				print('Skipping traj ', trajnum, 'label is too large              ')
 				
 			else:	
 				#print cell
@@ -850,7 +850,7 @@ def main(argv):
 			traj = trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime
 
 		NEWTRAJLIST.append(traj)
-		print 'Processed ', len(NEWTRAJLIST), ' lineages'
+		print('Processed ', len(NEWTRAJLIST), ' lineages')
 		sys.stdout.write('\x1b[1A') 
 		
 	if writeLabels:
@@ -859,7 +859,7 @@ def main(argv):
 			#write text to images and save
 			for key in images:
 				image = writeText(key)
-				print 'Saving ... ', key, '             '
+				print('Saving ... ', key, '             ')
 				sys.stdout.write('\x1b[1A') 
 				savename = rootdir + labelname %(key)
 				misc.imsave(savename, image)
@@ -867,7 +867,7 @@ def main(argv):
 		else:
 			for key in images:
 				image = images[key]
-				print 'Saving ... ', key, '             '
+				print('Saving ... ', key, '             ')
 				sys.stdout.write('\x1b[1A') 
 				savename = rootdir + labelname %(key)
 				misc.imsave(savename, image)
@@ -926,7 +926,7 @@ def main(argv):
 		STDFL = np.array(stdFL)
 	DTIMES = np.array(dtimes)
 
-	f = open(lineageCSV, 'wb')
+	f = open(lineageCSV, 'w')
 	f.write('traj name,')
 	f.write('final time,')
 	f.write('initial time,')
@@ -971,7 +971,7 @@ def main(argv):
 		pickle.dump(TOWRITE, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-	print '\nCell tracking complete'
+	print('\nCell tracking complete')
 ####################################################################
 ####################################################################
 

@@ -18,7 +18,7 @@ import string
 import sys
 import os
 
-import cPickle as pickle
+import pickle as pickle
 
 from multiprocessing import Pool
 
@@ -58,14 +58,14 @@ if (True):
 def text_input(DISPLAY):
 	str = ''
 	while (str == ''):
-		str = raw_input(DISPLAY)	
+		str = input(DISPLAY)	
 	return str
 	
 # helper function for input
 def bool_input(DISPLAY):
 	bValue = None
 	while (bValue is None):
-		str = raw_input(DISPLAY)
+		str = input(DISPLAY)
 		if (str=='y' or str=='Y'):
 			bValue = True
 		elif (str=='n' or str=='N'):
@@ -77,7 +77,7 @@ def bool_input(DISPLAY):
 def int_input(DISPLAY):
 	iValue = None
 	while (iValue is None):
-		str = raw_input(DISPLAY)
+		str = input(DISPLAY)
 		try:
 			iValue = int(str)
 		except:
@@ -89,7 +89,7 @@ def int_input(DISPLAY):
 def float_input(DISPLAY):
 	iValue = None
 	while (iValue is None):
-		str = raw_input(DISPLAY)
+		str = input(DISPLAY)
 		try:
 			iValue = float(str)
 		except:
@@ -104,7 +104,7 @@ def getfilename(prompt):
 		FILENAME = text_input(prompt)
 		ISFILE = os.path.isfile(FILENAME)
 		if not ISFILE:
-			print 'cannot find file'
+			print('cannot find file')
 	return FILENAME
 	
 def getdirname(prompt):
@@ -113,13 +113,13 @@ def getdirname(prompt):
 		PATHNAME = text_input(prompt)
 		ISPATH = os.path.isdir(PATHNAME)
 		if not ISPATH:
-			print 'cannot find directory'
+			print('cannot find directory')
 	return PATHNAME
 ##################################################################
 
 def text_list():
 	LENGTH = int_input('Enter the number of lineages you wish to analyze: ')
-	print 'Input the full name for each lineage (e.g. 0001, 0001-2, 10001).'
+	print('Input the full name for each lineage (e.g. 0001, 0001-2, 10001).')
 	LIST = []
 	for l in range(LENGTH):
 		L = text_input('Lineage ' + str(l+1) + ': ')
@@ -142,7 +142,7 @@ def CSVOUT(trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime,FLLABE
 	
 	i = 0
 	for fl in fl0:
-		if fl == None:
+		if fl[0] == None:
 			fl0[i] = 'nan'
 		i +=1
 			
@@ -156,7 +156,7 @@ def CSVOUT(trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime,FLLABE
 	#~ if dtimes != None:
 		#~ DTIMES = np.array(dtimes)
 
-	f = open(OUTDIR + '/iXY' + str(iXY) + '-' + trajname + '.csv' , 'wb')
+	f = open(OUTDIR + '/iXY' + str(iXY) + '-' + trajname + '.csv' , 'w')
 	f.write('frame,')
 	f.write('time,')
 	f.write('area,')
@@ -183,7 +183,7 @@ def CSVOUT(trajname,frame,time,area,cellXY,celllabels,fl0,divisions,dtime,FLLABE
 	f.close()	
 	
 	CURSOR_UP_ONE = '\x1b[1A'
-	print ('saving ' + trajname + '.csv                                 ')                                    
+	print(('saving ' + trajname + '.csv                                 '))                                    
 	sys.stdout.write(CURSOR_UP_ONE) 
 ############################################################################
 ############################################################################
@@ -215,7 +215,7 @@ def main(argv):
 		#~ with open('lineagetrackingsummary.pkl', 'rb') as f:
 			#~ NAMES,ITIMES,ETIMES,MEANAREA,STDAREA,MEANFL,STDFL = pickle.load(f)
 	except:
-		print 'Could not load file: '+'iXY' + str(iXY) + '_lineagetracking.pkl /n Cells must be tracked with TrackCellLineages.py (run through SegmentandTrack.py) before analyzing lineages'
+		print('Could not load file: '+'iXY' + str(iXY) + '_lineagetracking.pkl /n Cells must be tracked with TrackCellLineages.py (run through SegmentandTrack.py) before analyzing lineages')
 	############################################################################
 	############################################################################
 
@@ -238,7 +238,7 @@ def main(argv):
 				#pdb.set_trace()
 				CSVOUT(traj,frame,time,area,cellXY,celllabels,fl0,divisions,dtime,FLLABELS, iXY)
 			except:
-				print traj + ' cannot be found'
+				print(traj + ' cannot be found')
 
 ############################################################################
 
