@@ -857,6 +857,9 @@ def main(argv):
 		# write image, finally
 		# need to shift by lowest frame
 		#~ print(CONFIGVARSfmtOutFileAll % (index))
+		if IMG.shape[0]%2 != 0 or IMG.shape[1]%2 != 0:
+			IMG = scaleDown(IMG,2)
+		
 		if ContourImage:
 			cv.imwrite(CONFIGVARSfmtOutFileAll % (index), IMG)
 		else:
@@ -1492,11 +1495,11 @@ if __name__ == "__main__":
 		main(sys.argv[1:])
 	else:
 		#True if analyzing whole image (optional: analyze ROI)
-		b_ANALYZE = False
+		b_ANALYZE = True
 		#True if rendering videos (requires b_ANALYZE = True)
 		b_RENDER = True
 		#True if stacking videos 
-		b_STACK = True
+		b_STACK = False
 		#Directory containing the images
 		ImageDir = 'Test'
 		AlignDir = ImageDir
@@ -1506,23 +1509,24 @@ if __name__ == "__main__":
 		fname = 't'
 
 		#first frame of images
-		FIRSTFRAME = 460
+		FIRSTFRAME = 50
 		#last frame of images
-		FRAMEMAX = 1494
+		FRAMEMAX = 100
 		#first frame with fluorescence image
-		FLINITIAL = 463
+		FLINITIAL = 50
 		#frequency of fluorescence images (i.e. every nth frame)
-		FLSKIP = 6
+		FLSKIP = 1
 		#time between frames in minutes
 		Ftime = 0.5 #min
 		#number of fluorescence channels
-		iC = 3
+		iC = 0
 
 		#labels for fluorescence channels (must be strings)
-		FLLABELS = ['YFP','CFP','mCherry']
+		#~ FLLABELS = ['YFP','CFP','mCherry']
+		FLLABELS = []
 		
 		#csv file containing ROI to analyze and/or crop to; if no file set to None
-		ROIFILE = 'ROI.csv'
+		ROIFILE = 'cropROI.csv'
 		#True if cropping images to ROI
 		CroptoROI = True
 		#True if writing lineages to video (requires lineagetracking.pkl)

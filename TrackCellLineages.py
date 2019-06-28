@@ -181,6 +181,7 @@ def main(argv):
 
 	# period of fluorescence frames (every nth frame)
 	dPeriodFL = argv[10]  # frames
+	FLSKIP = dPeriodFL
 	#the first frame that has a fluorescence image
 	FLINITIAL = argv[11]
 
@@ -200,19 +201,19 @@ def main(argv):
 
 		# get segmentation data
 		filename = rootdir + filefmt % (iFRAME,iXY,1)
-		img = ndimage.imread(filename)
+		img = cv.imread(filename)
 		#print 'loaded label file', iFRAME, ' with dimensions', img.shape
 		img = 255-img
 		
 		# get fluorescence data
 		imgFLALL = []
 		for icf in iCF:
-			try:
+			if ((iFRAME - FLINITIAL) % FLSKIP == 0) and (iFRAME >= FLINITIAL):
 				filename = rootdir + filefmtfl % (iFRAME,iXY,icf)
 				#print filename
-				imgFL = ndimage.imread(filename)
+				imgFL = cv.imread(filename)
 				FLFILES.append(iFRAME)
-			except:
+			else:
 				imgFL = None
 
 			
@@ -355,6 +356,7 @@ def main(argv):
 
 	#write to the image and save in images dictionary
 	def writeLabel(newtrajnum, XY, label, iFRAME):
+		lshape = label.shape
 		img = images[iFRAME]
 			
 		color = colors[(int(newtrajnum[0:4]) % len(colors))]
@@ -364,10 +366,19 @@ def main(argv):
 		#could create a mask based on single label and combines it with image
 		#right now it just edits the image itself
 		#fnp = np.empty(img.shape)
-		for j,k in label:
-			#first line uses colors from colorfile, second line just uses red
-			img[j,k] = color
-			#img[j,k] = (255,0,0)
+		if lshape[-1] == 3:
+			for j,k,i in label:
+				#first line uses colors from colorfile, second line just uses red
+				img[j,k] = color
+				#img[j,k] = (255,0,0)
+		elif lshape[-1] == 2:
+			for j,k in label:
+				#first line uses colors from colorfile, second line just uses red
+				img[j,k] = color
+				#img[j,k] = (255,0,0)
+				
+		else:
+			print('Error: label does not contain coordinates')
 		
 		#pdb.set_trace()
 		#img = img + fnp*0.1
@@ -423,37 +434,37 @@ def main(argv):
 
 
 
-	#~ # get measurements in parallel
+	# get measurements in parallel
 	MEASUREMENTS = []
 	ARGLIST = []
 	for iFRAME in range(FIRSTFRAME,FRAMEMAX,1):
 		ARGLIST.append(iFRAME)
 	
-	if pool != None:
-		pool = Pool(pool)
-		MEASUREMENTS = pool.map(runOnce, ARGLIST)
-		pool.close
-	else:
-		MEASUREMENTS = list(map(runOnce, ARGLIST))
+	#if pool != None:
+	#	pool = Pool(pool)
+	#	MEASUREMENTS = pool.map(runOnce, ARGLIST)
+	#	pool.close
+	#else:
+	MEASUREMENTS = list(map(runOnce, ARGLIST))
 		
 	TRACKING_RESULTS = MEASUREMENTS
 
 
 	#pdb.set_trace()
 
-	############################################################################
 	#~ ############################################################################
-	#~ # save results - for use when running piecemeal
-	#~ fpkl = open('trackMasks.pkl', 'wb')
-	#~ pickle.dump(MEASUREMENTS, fpkl, protocol=pickle.HIGHEST_PROTOCOL)
-	#~ fpkl.close()
-
 	############################################################################
-	############################################################################
-	#~ #analyzeTracking
+	# save results - for use when running piecemeal
+	fpkl = open('trackMasks.pkl', 'wb')
+	pickle.dump(MEASUREMENTS, fpkl, protocol=pickle.HIGHEST_PROTOCOL)
+	fpkl.close()
 
-	#~ with open('trackMasks.pkl', 'rb') as f:
-		#~ TRACKING_RESULTS = pickle.load(f)
+	#~ ############################################################################
+	#~ ############################################################################
+	#analyzeTracking
+
+	with open('trackMasks.pkl', 'rb') as f:
+		TRACKING_RESULTS = pickle.load(f)
 	
 	
 	# unpack results into handy variables
@@ -463,7 +474,10 @@ def main(argv):
 	comXY, celllabels1, AREA = list(zip(*CELLSTATS))
 
 	# number of fluorescence channels
-	FLN = len(FLMEASURE[0][:,0])
+	try:
+		FLN = len(FLMEASURE[0][:,0])
+	except:
+		FLN = len(FLMEASURE[0])
 	print(FLN)
 
 	#~ ############################################################################
@@ -471,7 +485,7 @@ def main(argv):
 	#get total cell data
 	if FLINITIAL != 0:
 		# total number of frames
-		iTN = len(FLMEASURE[0][0,:])
+		iTN = FLN
 
 		# place to save mean and std data
 		FLMEANALL = []
@@ -733,13 +747,13 @@ def main(argv):
 	print('\n', TRAJCOUNT, ' total trajectories')
 	
 	#~ #pickle file to output when running piecemeal
-	#~ with open('raw_traj.pkl', 'wb') as f:
-		#~ pickle.dump(TRAJ, f, protocol=pickle.HIGHEST_PROTOCOL)
-	# pdb.set_trace()
+	with open('raw_traj.pkl', 'wb') as f:
+		pickle.dump(TRAJ, f, protocol=pickle.HIGHEST_PROTOCOL)
+	#~ # pdb.set_trace()
 
-	#~ with open('raw_traj.pkl', 'rb') as f:
-		#~ TRAJ = pickle.load(f)
-	#~ FLN = len(FLLABELS)
+	with open('raw_traj.pkl', 'rb') as f:
+		TRAJ = pickle.load(f)
+	FLN = len(FLLABELS)
 
 	########################################################################
 	########################################################################
@@ -999,11 +1013,11 @@ if __name__ == "__main__":
 		Mask2Dir = 'Mask2'
 		
 		#first frame of images
-		FIRSTFRAME = 460
+		FIRSTFRAME = 50
 		#last frame of images
-		FRAMEMAX = 500
+		FRAMEMAX = 100
 		#first frame with fluorescence image
-		FLINITIAL = 463
+		FLINITIAL = 55
 		#frequency of fluorescence images (i.e. every nth frame)
 		FLSKIP = 6
 		#time between frames in minutes
@@ -1025,7 +1039,7 @@ if __name__ == "__main__":
 		#minimum length of trajectories in # of frames
 		MINTRAJLENGTH = 10
 		
-		CORES = 21
+		CORES = 1
 		
 		iXY = 5
 		
