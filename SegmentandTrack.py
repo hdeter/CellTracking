@@ -97,6 +97,17 @@ def int_input(DISPLAY, loc = 1):
 	return iValue
 	
 # helper function for input
+def raw_int_input(DISPLAY, loc = 1):
+	iValue = None
+	while (iValue is None):
+		str = input(DISPLAY)
+		try:
+			iValue = int(str)
+		except:
+			iValue = None
+	return iValue
+	
+# helper function for input
 def float_input(DISPLAY):
 	iValue = None
 	if CSVPrompt:
@@ -243,6 +254,9 @@ if b_track or b_ANALYZE or b_RENDER:
 	#~ Ftime = 0.5
 if b_ALIGN or b_track or b_ANALYZE or b_RENDER:
 	FLINITIAL = int_input('Enter the number of the first frame with a fluorescence image (e.g. 1; for no fluorescence enter 0):')
+	while not FLINITIAL in list(range(FIRSTFRAME,FRAMEMAX)):
+		print('frame is not within range', FIRSTFRAME, '-',FRAMEMAX)
+		FLINITIAL = raw_int_input('Enter the number of the first frame with a fluorescence image (e.g. 1; for no fluorescence enter 0):')
 	#~ FLINITIAL = 463
 	FLSKIP = int_input('Enter the number of frames between fluorescence images (i.e. every nth image; for no fluorescence enter 0):')	
 	#~ FLSKIP = 6
