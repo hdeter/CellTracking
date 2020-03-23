@@ -875,6 +875,8 @@ def main(argv):
 
 	# renders a single plot from various channel data (ctarget)
 	def renderPlot(statNP1, statNP_all, XY_loc, index, ctarget, YLABEL, filterData, YLIM, pklfiletrim, FRAMEMIN, TRAJ, fltimeALL,FLMEDIANALL):
+		
+		#~ pdb.set_trace()
 		# change FRAMEMIN if not a positive number
 		# FRAMEMIN being negative is a flag
 		# could be buggy if used as a negative number in this code
@@ -891,45 +893,46 @@ def main(argv):
 		dataALLPlotted_orig = []
 
 		plt.cla()
-		xynow = 0
-		for statNP in statNP_all:
-			xynow = xynow + 1
+		
+		#~ pdb.set_trace()
 
-			# get the file names from the results
-			fnamesALL = statNP['fname']
-
-			# frames associated with data
-			frames = statNP['frame']
-
-			# get the keys (channel numbers) from the results
-			keys = list(fnamesALL.keys())
-
-
-			# statistics on various channels
-			img_mean = statNP['mean']
-
-
-			data_x = (timePerFrame*(np.array(frames)-1))
-			data_y = img_mean[ctarget]
-
-
-			SZ = data_y.shape
+		statNP = statNP_all[np.where(np.array(iXY) == XY_loc)[0][0]]
 			
-			tcenter = timePerFrame*(frames[index]-1.0)
-			plt.plot(np.array([0.0,0.0])+tcenter,[-10000,10000], 'r', linewidth=1)
-			
+		# get the file names from the results
+		fnamesALL = statNP['fname']
 
-			for targ in range(1,SZ[1]):
-				dataALLPlotted_orig.append(1.0*data_y[:,targ])
-				if TRAJ == None or index == 0:
-					data = filterData(data_y[:,targ])
+		# frames associated with data
+		frames = statNP['frame']
 
-					if (not data is None):
+		# get the keys (channel numbers) from the results
+		keys = list(fnamesALL.keys())
 
-						dataALLPlotted.append(data)
-						plt.plot(data_x, data, '-', color='gray')
-						#plt.show()
-					
+
+		# statistics on various channels
+		img_mean = statNP['mean']
+
+
+		data_x = (timePerFrame*(np.array(frames)-1))
+		data_y = img_mean[ctarget]
+
+
+		SZ = data_y.shape
+		
+		tcenter = timePerFrame*(frames[index]-1.0)
+		plt.plot(np.array([0.0,0.0])+tcenter,[-10000,10000], 'r', linewidth=1)
+		
+
+		for targ in range(1,SZ[1]):
+			dataALLPlotted_orig.append(1.0*data_y[:,targ])
+			if TRAJ == None or index == 0:
+				data = filterData(data_y[:,targ])
+
+				if (not data is None):
+
+					dataALLPlotted.append(data)
+					plt.plot(data_x, data, '-', color='gray')
+					#plt.show()
+				
 		if TRAJ != None:
 			for traj in TRAJ:
 				plt.plot(TRAJ[traj][0],TRAJ[traj][1], 'k--', linewidth = 0.5)
@@ -939,7 +942,8 @@ def main(argv):
 					
 		else:
 			dataALLPlotted = np.array(dataALLPlotted)
-			#print 'shape = ', dataALLPlotted.shape
+			#~ print('shape = ', dataALLPlotted.shape)
+	
 
 			#plt.plot(data_x, np.mean(dataALLPlotted, axis=0), 'b--', linewidth=2)
 			plt.plot(data_x, np.median(dataALLPlotted, axis=0), 'r-', linewidth=2)
@@ -1198,7 +1202,7 @@ def main(argv):
 							
 				else:
 					TRAJ = None
-					fltimeAll = None
+					fltimeALL = None
 					FLMEDIANALL = None
 
 				for index in range(len(statNP['frame'])):
@@ -1476,6 +1480,8 @@ def main(argv):
 	if(b_RENDER):
 		os.system('mkdir VIDEOS')
 		os.system('mv *.mp4 VIDEOS/')
+		os.system('mkdir CSV_DATA')
+		os.system('mv *data*.csv')
 
 	print('Finished')
 
@@ -1495,13 +1501,13 @@ if __name__ == "__main__":
 		main(sys.argv[1:])
 	else:
 		#True if analyzing whole image (optional: analyze ROI)
-		b_ANALYZE = True
+		b_ANALYZE = False
 		#True if rendering videos (requires b_ANALYZE = True)
 		b_RENDER = True
 		#True if stacking videos 
-		b_STACK = False
+		b_STACK = True
 		#Directory containing the images
-		ImageDir = 'Test'
+		ImageDir = '032320_Stricker'
 		AlignDir = ImageDir
 		#get working directory
 		WorkDir = os.getcwd()
@@ -1509,35 +1515,35 @@ if __name__ == "__main__":
 		fname = 't'
 
 		#first frame of images
-		FIRSTFRAME = 50
+		FIRSTFRAME = 1
 		#last frame of images
-		FRAMEMAX = 100
+		FRAMEMAX = 151
 		#first frame with fluorescence image
-		FLINITIAL = 50
+		FLINITIAL = 1
 		#frequency of fluorescence images (i.e. every nth frame)
-		FLSKIP = 1
+		FLSKIP = 6
 		#time between frames in minutes
 		Ftime = 0.5 #min
 		#number of fluorescence channels
-		iC = 0
+		iC = 1
 
 		#labels for fluorescence channels (must be strings)
 		#~ FLLABELS = ['YFP','CFP','mCherry']
-		FLLABELS = []
+		FLLABELS = ['GFP']
 		
 		#csv file containing ROI to analyze and/or crop to; if no file set to None
 		ROIFILE = 'cropROI.csv'
 		#True if cropping images to ROI
-		CroptoROI = True
+		CroptoROI = False
 		#True if writing lineages to video (requires lineagetracking.pkl)
-		Writelineages = True
+		Writelineages = False
 		#True if contouring images (requires Masks)
 		ContourImage = False
 		#mask directory (relative to image directory) for contouring images (only needed if ContourImage = True)
 		Mask2Dir = 'Mask2'
 		
-		iXY = [5]
-		xyref = 5
+		iXY = [1,2,3,4,5,6,7,8,9]
+		xyref = 1
 		
 	AnalyzeARG = [AlignDir, FLSKIP, b_ANALYZE, ROIFILE, b_RENDER, ContourImage, AlignDir + '/' + Mask2Dir, CroptoROI, Writelineages, iC, FLINITIAL, fname, Ftime, FLLABELS, iXY, xyref,FRAMEMAX,b_STACK]
 	main(AnalyzeARG)
