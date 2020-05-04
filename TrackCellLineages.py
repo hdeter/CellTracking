@@ -876,7 +876,7 @@ def main(argv):
 				print('Saving ... ', key, '             ')
 				sys.stdout.write('\x1b[1A') 
 				savename = rootdir + labelname %(key)
-				misc.imsave(savename, image)
+				cv.imwrite(savename, image)
 
 		else:
 			for key in images:
@@ -884,7 +884,7 @@ def main(argv):
 				print('Saving ... ', key, '             ')
 				sys.stdout.write('\x1b[1A') 
 				savename = rootdir + labelname %(key)
-				misc.imsave(savename, image)
+				cv.imwrite(savename, image)
 
 	########################################################################
 	########################################################################
