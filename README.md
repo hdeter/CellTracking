@@ -1,7 +1,15 @@
 # CellTracking
 Python and ImageJ scripts designed to track single cells, determine cell lineage and analyze fluorescence
 
-Segmentation Tools for Bacteria based on Machine Learning. Version 3.1. June 2019. The purpose of this project is to provide a number of tools for cell-tracking and image analysis. These tools consist of a number of scripts that utilize preexisting open-source software (Fiji ImageJ, Anaconda 3.7, and related packages) included here and available online (https://www.anaconda.com/download/, https://imagej.net/Fiji/Downloads). A detailed method for using these tools will be published in Springer Methods (Deter et al. 2019), and a video tutorial corresponding to version 2.0 is available on Youtube (https://www.youtube.com/watch?v=wGdIvzBevLM&list=PLL9QX_pyUva9e-Nr0xphPegYg2RJj8OQE). For more information and examples in the context of bacterial growth see https://osf.io/75avy/.
+Segmentation Tools for Bacteria based on Machine Learning. Version 3.1. June 2019. The purpose of this project is to provide a number of tools for cell-tracking and image analysis. These tools consist of a number of scripts that utilize preexisting open-source software (Fiji ImageJ, Anaconda 3.7, and related packages) included here and available online (https://www.anaconda.com/download/, https://imagej.net/Fiji/Downloads). 
+
+-----------------------------------------------------------------------------------------------------------------------------
+Publication
+
+Methodology for this repository was first published in Deter et al. 2019. A Cell Segmentation/Tracking Tool Based on Machine Learning. Methods Mol Bio. (https://doi.org/10.1007/978-1-4939-9686-5_19), and a video tutorial corresponding to version 2.0 is available on Youtube (https://www.youtube.com/watch?v=wGdIvzBevLM&list=PLL9QX_pyUva9e-Nr0xphPegYg2RJj8OQE). For more information and examples in the context of bacterial growth see https://osf.io/75avy/.
+
+-----------------------------------------------------------------------------------------------------------------------------
+Versions
 
 For version 2.0 see https://github.com/hdeter/CellTracking/releases/tag/v2.0.
 
