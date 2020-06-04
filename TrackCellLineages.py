@@ -22,6 +22,7 @@ from multiprocessing import Pool
 
 import scipy.ndimage as ndimage
 import scipy.misc as misc
+import imageio
 
 import scipy.sparse
 
@@ -201,7 +202,7 @@ def main(argv):
 
 		# get segmentation data
 		filename = rootdir + filefmt % (iFRAME,iXY,1)
-		img = cv.imread(filename)
+		img = imageio.imread(filename)
 		#print 'loaded label file', iFRAME, ' with dimensions', img.shape
 		img = 255-img
 		
@@ -211,7 +212,7 @@ def main(argv):
 			if ((iFRAME - FLINITIAL) % FLSKIP == 0) and (iFRAME >= FLINITIAL):
 				filename = rootdir + filefmtfl % (iFRAME,iXY,icf)
 				#print filename
-				imgFL = cv.imread(filename)
+				imgFL = imageio.imread(filename)
 				FLFILES.append(iFRAME)
 			else:
 				imgFL = None
@@ -247,7 +248,9 @@ def main(argv):
 					FLMEASURE.append(flmean)
 			else:
 				FLMEASURE.append(None)
-			
+		
+		#pdb.set_trace()
+		
 		if i == 1:
 			labelsum = ndimage.sum(label, label, list(range(nlabels)))
 			celllabels = labelsum / AREA
@@ -808,7 +811,7 @@ def main(argv):
 				if iFRAME not in LVISITED:
 					LVISITED.append(iFRAME)
 					filename = rootdir + labelimage % (iFRAME,iXY,1)
-					img = ndimage.imread(filename)
+					img = imageio.imread(filename)
 					imgshape = img.shape
 					bimg = np.zeros(imgshape  + (3,))
 					img = addGrayToColor(bimg, img)
@@ -927,7 +930,7 @@ def main(argv):
 			stdFL.append(flstd)
 		dtimes.append(dtime)
 
-
+	
 
 
 	NAMES = np.array(name)
