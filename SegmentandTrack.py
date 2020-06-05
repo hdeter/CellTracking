@@ -254,13 +254,14 @@ if b_track or b_ANALYZE or b_RENDER:
 	#~ Ftime = 0.5
 if b_ALIGN or b_track or b_ANALYZE or b_RENDER:
 	FLINITIAL = int_input('Enter the number of the first frame with a fluorescence image (e.g. 1; for no fluorescence enter 0):')
-	while not FLINITIAL in list(range(FIRSTFRAME,FRAMEMAX)):
+	while not FLINITIAL in list(range(FIRSTFRAME,FRAMEMAX)) and (FLINITIAL != 0):
 		print('frame is not within range', FIRSTFRAME, '-',FRAMEMAX)
 		FLINITIAL = raw_int_input('Enter the number of the first frame with a fluorescence image (e.g. 1; for no fluorescence enter 0):')
 	#~ FLINITIAL = 463
-	FLSKIP = int_input('Enter the number of frames between fluorescence images (i.e. every nth image; for no fluorescence enter 0):')	
+	
 	#~ FLSKIP = 6
 	if FLINITIAL != 0:
+		FLSKIP = int_input('Enter the number of frames between fluorescence images (i.e. every nth image; for no fluorescence enter 0):')	
 		iC = int_input('Enter the number of fluorescence channels you wish to analyze:')
 		#~ iC = 3
 		#~ FLChannels = [2,3,4]
@@ -276,6 +277,7 @@ if b_ALIGN or b_track or b_ANALYZE or b_RENDER:
 	else:
 		iC = 0
 		FLChannels = []
+		FLSKIP = 0
 			
 if b_ALIGN or b_Segment or b_track or b_ANALYZE or b_RENDER:
 	FNAME = False
@@ -310,7 +312,17 @@ if b_ANALYZE or b_track or b_RENDER:
 		for i in FLChannels:
 			label = text_input('Enter the name of c' + str(i) +' (e.g. YFP):')
 			FLLABELS.append(label)
-		
+elif LANALYZE:
+	FLLABELS = []
+	iC = int_input('Enter the number of fluorescence channels you wish to analyze:')
+	if CSVPrompt:
+		for i in range(iC):
+			label = text_input('List the label for each fluorescence channel:', i+1)
+			FLLABELS.append(label)
+	else:
+		for i in FLChannels:
+			label = text_input('Enter the name of c' + str(i) +' (e.g. YFP):')
+			FLLABELS.append(label)
 
 if b_ALIGN:
 	ROIALIGNFILE = bool_input('Do you have a ROI file for a stationary area? (Y/N):')
@@ -416,8 +428,13 @@ if b_Segment:
 		os.system('mkdir ' + runMask2Dir)
 	else:
 		os.system('rm ' + runMask2Dir + '/' + fname + '*.png')
-	WekaARG2 = [IMAGEJ, False, WorkDir + '/', runMask1Dir+ '/', runMask2Dir + '/', FIRSTFRAME, FRAMEMAX, fname, 'png', classifierfile2, CORES, iXY] 
 		
+	if ROUND2 == 2:
+		WekaARG2 = [IMAGEJ, False, WorkDir + '/', runMask1Dir+ '/', runMask2Dir + '/', FIRSTFRAME, FRAMEMAX, fname, 'png', classifierfile2, CORES, iXY] 
+	else:
+		imgext = raw_text_input('Enter the extension of the images you are classifying (e.g. tif): ')
+		WekaARG2 = [IMAGEJ, False, WorkDir + '/', runMask1Dir+ '/', runMask2Dir + '/', FIRSTFRAME, FRAMEMAX, fname, imgext, classifierfile2, CORES, iXY] 
+	
 	RunWeka.batchsegment(WekaARG2)
 
 
@@ -466,15 +483,9 @@ if b_track:
 	for ixy in iXY:
 		TrackARG.append([AlignDir, fname, Mask2Dir, LineageDir, FIRSTFRAME, FRAMEMAX, AREAMIN, AREAMAX,FLLABELS, Ftime, FLSKIP, FLINITIAL,MINTRAJLENGTH,ixy,FLChannels,None])
 	
-	if CORES == None:
-		CORES = int_input('Enter how many processes are available to use for multiprocessing; set to 1 for no multiprocessing:')
-		#~ CORES = 21
-	if CORES == 1:
-		list(map(TrackCellLineages.run,TrackARG))
-	else:
-		pool = Pool(CORES)
-		pool.map(TrackCellLineages.run,TrackARG)
-		pool.close()
+
+	list(map(TrackCellLineages.run,TrackARG))
+
 	
 	
 if LANALYZE:
@@ -493,7 +504,7 @@ if b_ANALYZE or b_RENDER:
 		b_tracked = False
 		for ixy in iXY:
 			if b_tracked == False:
-				b_tracked = os.path.isfile('iXY' + str(ixy) + '_lineagetracking.pkl')
+				b_tracked = os.path.isfile('iXY' + str(iXY[0]) + '_lineagetracking.pkl')
 		if not b_tracked:
 			print('Cannot find lineagetext.pkl to use for writing text.')
 			Writelineagetext = False
