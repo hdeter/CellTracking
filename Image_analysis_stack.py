@@ -699,7 +699,7 @@ def main(argv):
 		img = mask
 		img = 255-img
 		#img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-		im2, contours = cv.findContours(img, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+		contours, hierarchy = cv.findContours(img, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
 		contourimg = cv.drawContours(fimg*255, contours,-1, (0,0,65535),1)
 		return contourimg
 
@@ -896,7 +896,7 @@ def main(argv):
 		
 		#~ pdb.set_trace()
 
-		statNP = statNP_all[np.where(np.array(iXY) == XY_loc)[0][0]]
+		statNP = statNP_all[np.where(np.array(XYRENDER) == XY_loc)[0][0]]
 			
 		# get the file names from the results
 		fnamesALL = statNP['fname']
